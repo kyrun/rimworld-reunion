@@ -166,6 +166,8 @@ namespace Kyrun
 				pawn = ListAlly[randomIndex];
 				ListAlly.RemoveAt(randomIndex);
 
+				pawn.SetFactionDirect(null); // remove faction, if any
+
 				var trait = pawn.story.traits.GetTrait(TraitDef_Character);
 				if (trait != null)
 				{
@@ -182,6 +184,7 @@ namespace Kyrun
 			{
 				var oldProb = _eventProbability;
 				_eventProbability += Settings.probabilityIncrementStep;
+				_eventProbability = Math.Max(_eventProbability, 100); // cap at 100
 				Log.Message("Roll failed: " + roll + " vs " + oldProb + ", probability incremented to " + _eventProbability);
 				return false;
 			}
@@ -307,7 +310,6 @@ namespace Kyrun
 				IEnumerable<PawnKindDef> pawnKinds = PawnGroupMakerUtility.GeneratePawnKindsExample(defaultPawnGroupMakerParms);
 
 				Pawn refugee = pawn; // EDIT
-				refugee.SetFactionDirect(null); // change to null to prevent exception
 				refugee.relations.everSeenByPlayer = true;
 
 				string text = "RefugeeChasedInitial".Translate(refugee.Name.ToStringFull, refugee.story.Title, faction.def.pawnsPlural, faction.Name, refugee.ageTracker.AgeBiologicalYears, PawnUtility.PawnKindsToCommaList(pawnKinds, true), refugee.Named("PAWN"));
@@ -373,7 +375,6 @@ namespace Kyrun
 
 
 	// DOWNED REFUGEE
-	// Known Issue: Pawn is hostile
 	[HarmonyPatch(typeof(DownedRefugeeQuestUtility), "GenerateRefugee")]
 	[HarmonyPatch(new Type[] { typeof(int) })]
 	static class DownedRefugeeQuestUtility_GenerateRefugee_Patch

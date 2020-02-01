@@ -5,48 +5,5 @@
 	<supportedVersions>
 		<li>1.0</li>
 	</supportedVersions>
-	<description>+ Have you ever used Prepare Carefully to add pawns to the World, hoping that you will have them organically join you one day?
-+ Do you wish to play the story of the protagonist that assembles a group of allies on their hero's journey?
-+ Perhaps you just didn't like to start a colony with more than a single pawn, but you wanted some control over what pawns will join you over the long run.
-
-I know I have for all of the above. I couldn't find any mods that did this so I decided to make it myself (this is my first mod).
-
-This mod is meant to be used alongside EdB Prepare Carefully. When adding pawns to the World, give them the trait "(Reunion) Ally". This will ensure that these pawns will be injected into events that spawn pawns that will join you. The events are:
-
-- Wanderer Joins
-- Refugee Chased
-- Prisoner Rescue
-- Downed Refugee
-
-Pawns that join you will immediately lose the "(Reunion) Ally" trait.
-
-This mod should be compatible with most other mods. Mods that modify the above events might have some issues, so please let me know if they break. This mod will not break existing saves. In fact, if you have characters in your save game that are "lost" in the World pool, you can use the debug menu to give a pawn the "Ally" trait. They will immediately be detected by the mod.
-
-This mod can be disabled once all of your Ally pawns have joined you. I don't know what will happen if the mod is removed while some pawns still have the Ally trait, but I am guessing it won't break anything.
-
-Technical Notes:
-1. Every time one of the above events occur, a random number from 1-100 will be rolled.
-2. This number is tested against the Probability to Spawn, which begins at the value specified in the options (Minimum Probability To Spawn).
-3a. FAIL: If the rolled number is greater than the probability, the default event will fire. The probability is then incremented by a fixed amount (changeable in mod options).
-3b. SUCCESS: If the rolled number is less than or equal to the probability, the event is "hijacked", and one of your Ally pawns will be injected into the event.
-4. On a success, the probability is set back to the Minimum Probability To Spawn.
-
-Over time, the chance of getting your Ally pawns to spawn will get higher and higher, but will be reset once they have been spawned.
-
-Known Issues:
-1. This warning will appear on startup:
-	Tried to use an uninitialized DefOf of type PawnGroupKindDefOf. DefOfs are initialized right after all defs all loaded.
-	Uninitialized DefOfs will return only nulls. (hint: don't use DefOfs as default field values in Defs, try to resolve them in ResolveReferences() instead)
-This doesn't break anything. If anyone knows how to fix this, please let me know. It is caused by the code in Refugee Chased event.
-
-2. Downed Refugees may sometimes spawn as hostile if you set their starting faction to random. However, they are downed, and therefore will not attack. They will join immediately if you rescue them, so it's still the same thing.
-
-Thank you and enjoy!
-
-Download EdB Prepare Carefully:
-https://steamcommunity.com/sharedfiles/filedetails/?id=735106432
-
-Trooper Armor in image provided by [JDS] Star Wars Phase I Clone Armor:
-https://steamcommunity.com/sharedfiles/filedetails/?id=1909405058
-	</description>
+	<description>Use Prepare Carefully to add the trait "(Reunion) Ally" to a pawn in the World pool. Your chances of encountering this pawn in events that let them join you will greatly increase.</description>
 </ModMetaData>
