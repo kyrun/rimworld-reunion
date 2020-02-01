@@ -11,7 +11,7 @@ namespace Kyrun
 {
 	public class ReunionSettings : ModSettings
 	{
-		public int minimumProbability = 0;
+		public int minimumProbability = 10;
 		public int probabilityIncrementStep = 10;
 		public bool allowEventWandererJoins = true;
 		public bool allowEventRefugeeChased = true;
@@ -20,7 +20,7 @@ namespace Kyrun
 
 		public override void ExposeData()
 		{
-			Scribe_Values.Look(ref minimumProbability, "minimumProbability", 0);
+			Scribe_Values.Look(ref minimumProbability, "minimumProbability", 10);
 			Scribe_Values.Look(ref probabilityIncrementStep, "probabilityIncrementStep", 10);
 			Scribe_Values.Look(ref allowEventWandererJoins, "allowEventWandererJoins", true);
 			Scribe_Values.Look(ref allowEventRefugeeChased, "allowEventRefugeeChased", true);
