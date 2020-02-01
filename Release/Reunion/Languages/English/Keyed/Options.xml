@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<LanguageData>
+  <Reunion.MinimumProbability>Minimum Probability To Spawn (X/100)</Reunion.MinimumProbability>
+  <Reunion.ProbabilityIncrementStep>Probability To Increment After Fail To Spawn (X/100)</Reunion.ProbabilityIncrementStep>
+  <Reunion.AllowEventWandererJoins>Allow "Wanderer Joins" Event</Reunion.AllowEventWandererJoins>
+  <Reunion.AllowEventRefugeeChased>Allow "Refugee Chased" Event</Reunion.AllowEventRefugeeChased>
+  <Reunion.AllowEventPrisonerRescue>Allow "Prisoner Rescue" Event </Reunion.AllowEventPrisonerRescue>
+  <Reunion.AllowEventDownedRefugee>Allow "Downed Refugee" Event</Reunion.AllowEventDownedRefugee>
+</LanguageData>
