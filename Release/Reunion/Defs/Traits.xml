@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <TraitDef>
+        <defName>ReunionCharacter</defName>
+		<ignoreConfigErrors>true</ignoreConfigErrors>
+        <commonality>0</commonality>
+        <degreeDatas>
+            <li>
+                <label>(Reunion) Ally</label>
+                <description>[PAWN_nameDef] is an ally who will one day join your faction.</description>
+                <degree>3</degree>
+                <commonality>0</commonality>
+            </li>
+        </degreeDatas>
+    </TraitDef>
+</Defs>
