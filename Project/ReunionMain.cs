@@ -124,6 +124,7 @@ namespace Kyrun
 			}
 			Log.Message("Reunion Event Probability: " + _eventProbability);
 
+			ListAlly.Clear(); // clear the list (a reload might have a populated list)
 			foreach (var pawn in Current.Game.World.worldPawns.AllPawnsAlive)
 			{
 				if (pawn == null || pawn.story == null || pawn.story.traits == null) continue;
