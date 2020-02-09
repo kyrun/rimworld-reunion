@@ -11,22 +11,53 @@ namespace Kyrun
 {
 	public class ReunionSettings : ModSettings
 	{
+		public enum Event
+		{
+			WandererJoins,
+			RefugeePodCrash,
+			RefugeeChased,
+			PrisonerRescue,
+			DownedRefugee
+		};
+
 		public int minimumProbability = 10;
 		public int probabilityIncrementStep = 10;
-		public bool allowEventWandererJoins = true;
-		public bool allowEventRefugeeChased = true;
-		public bool allowEventPrisonerRescue = true;
-		public bool allowEventDownedRefugee = true;
 
+		// Toggle events
+		public Dictionary<Event, bool> EventAllow = new Dictionary<Event, bool>()
+		{
+			{ Event.WandererJoins, true },
+			{ Event.RefugeePodCrash, true },
+			{ Event.RefugeeChased, true },
+			{ Event.PrisonerRescue, true },
+			{ Event.DownedRefugee, true },
+		};
+
+		// Save Mod Settings
 		public override void ExposeData()
 		{
 			Scribe_Values.Look(ref minimumProbability, "minimumProbability", 10);
 			Scribe_Values.Look(ref probabilityIncrementStep, "probabilityIncrementStep", 10);
-			Scribe_Values.Look(ref allowEventWandererJoins, "allowEventWandererJoins", true);
-			Scribe_Values.Look(ref allowEventRefugeeChased, "allowEventRefugeeChased", true);
-			Scribe_Values.Look(ref allowEventPrisonerRescue, "allowEventPrisonerRescue", true);
-			Scribe_Values.Look(ref allowEventDownedRefugee, "allowEventDownedRefugee", true);
+
+			foreach (Event evtType in Enum.GetValues(typeof(Event)))
+			{
+				bool allowEvent = EventAllow[evtType];
+				var saveKey = CreateSaveKey(evtType);
+				Scribe_Values.Look(ref allowEvent, saveKey, true);
+				EventAllow[evtType] = allowEvent;
+			}
+
 			base.ExposeData();
+		}
+
+		public static string CreateSaveKey(Event eventType)
+		{
+			return "allowEvent" + eventType;
+		}
+
+		public static string CreateTranslationKey(Event eventType)
+		{
+			return "Reunion.AllowEvent" + eventType;
 		}
 	}
 
@@ -70,10 +101,12 @@ namespace Kyrun
 
 			listingStandard.Gap(GAP_HEIGHT);
 
-			listingStandard.CheckboxLabeled("Reunion.AllowEventWandererJoins".Translate(), ref _settings.allowEventWandererJoins);
-			listingStandard.CheckboxLabeled("Reunion.AllowEventRefugeeChased".Translate(), ref _settings.allowEventRefugeeChased);
-			listingStandard.CheckboxLabeled("Reunion.AllowEventPrisonerRescue".Translate(), ref _settings.allowEventPrisonerRescue);
-			listingStandard.CheckboxLabeled("Reunion.AllowEventDownedRefugee".Translate(), ref _settings.allowEventDownedRefugee);
+			foreach (ReunionSettings.Event evtType in Enum.GetValues(typeof(ReunionSettings.Event)))
+			{
+				var allow = _settings.EventAllow[evtType];
+				listingStandard.CheckboxLabeled(ReunionSettings.CreateTranslationKey(evtType).Translate(), ref allow);
+				_settings.EventAllow[evtType] = allow;
+			}
 
 			listingStandard.End();
 
@@ -215,14 +248,15 @@ namespace Kyrun
 		static void Postfix() => Reunion.Init();
 	}
 
-	// WANDERER JOINS
+
+	// WANDERER JOINS -----------------------------------------------------------------------------
 	[HarmonyPatch(typeof(IncidentWorker_WandererJoin), "TryExecuteWorker")]
 	[HarmonyPatch(new Type[] { typeof(IncidentParms) })]
 	static class IncidentWorker_WandererJoin_TryExecuteWorker_Patch
 	{
 		static bool Prefix(IncidentWorker_WandererJoin __instance, ref IncidentParms parms)
 		{
-			if (!Reunion.Settings.allowEventWandererJoins) return true;
+			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.WandererJoins]) return true;
 
 #if TESTING
 			Log.Message("[Reunion] Wanderer Joins");
@@ -256,10 +290,30 @@ namespace Kyrun
 	}
 
 
-	// REFUGEE CHASED
-	// Known Issue: Using PawnGroupKindDefOf generates this warning:
-	// Tried to use an uninitialized DefOf of type PawnGroupKindDefOf. DefOfs are initialized right after all defs all loaded.
-	// Uninitialized DefOfs will return only nulls. (hint: don't use DefOfs as default field values in Defs, try to resolve them in ResolveReferences() instead)
+	// REFUGEE POD CRASH --------------------------------------------------------------------------
+	[HarmonyPatch(typeof(ThingSetMaker_RefugeePod), "Generate")]
+	[HarmonyPatch(new Type[] { typeof(ThingSetMakerParams), typeof(List<Thing>) })]
+	static class ThingSetMaker_RefugeePod_Generate_Patch
+	{
+		static bool Prefix(ThingSetMaker_RefugeePod __instance, ref ThingSetMakerParams parms, ref List<Thing> outThings)
+		{
+			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.RefugeePodCrash]) return true;
+
+#if TESTING
+			Log.Message("[Reunion] Refugee Pod Crash");
+#endif
+			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
+			{
+				outThings.Add(pawn);
+				HealthUtility.DamageUntilDowned(pawn, true);
+				return false;
+			}
+			return true;
+		}
+	}
+
+
+	// REFUGEE CHASED -----------------------------------------------------------------------------
 	[HarmonyPatch(typeof(IncidentWorker_RefugeeChased), "TryExecuteWorker")]
 	[HarmonyPatch(new Type[] { typeof(IncidentParms) })]
 	static class IncidentWorker_RefugeeChased_TryExecuteWorker_Patch
@@ -270,7 +324,7 @@ namespace Kyrun
 
 		static bool Prefix(IncidentWorker_RefugeeChased __instance, ref IncidentParms parms)
 		{
-			if (!Reunion.Settings.allowEventRefugeeChased) return true;
+			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.RefugeeChased]) return true;
 
 #if TESTING
 			Log.Message("[Reunion] Refugee Chased");
@@ -359,14 +413,14 @@ namespace Kyrun
 		}
 	}
 
-	// PRISONER RESCUE
+	// PRISONER RESCUE ----------------------------------------------------------------------------
 	[HarmonyPatch(typeof(PrisonerWillingToJoinQuestUtility), "GeneratePrisoner")]
 	[HarmonyPatch(new Type[] { typeof(int), typeof(Faction) })]
 	static class PrisonerWillingToJoinQuestUtility_GeneratePrisoner_Patch
 	{
 		static bool Prefix(ref int tile, ref Faction hostFaction, ref Pawn __result)
 		{
-			if (!Reunion.Settings.allowEventPrisonerRescue) return true;
+			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.PrisonerRescue]) return true;
 
 #if TESTING
 			Log.Message("[Reunion] Prisoner Rescue");
@@ -383,14 +437,14 @@ namespace Kyrun
 	}
 
 
-	// DOWNED REFUGEE
+	// DOWNED REFUGEE -----------------------------------------------------------------------------
 	[HarmonyPatch(typeof(DownedRefugeeQuestUtility), "GenerateRefugee")]
 	[HarmonyPatch(new Type[] { typeof(int) })]
 	static class DownedRefugeeQuestUtility_GenerateRefugee_Patch
 	{
 		static bool Prefix(ref int tile, ref Pawn __result)
 		{
-			if (!Reunion.Settings.allowEventDownedRefugee) return true;
+			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.DownedRefugee]) return true;
 
 #if TESTING
 			Log.Message("[Reunion] Downed Refugee");
@@ -407,27 +461,7 @@ namespace Kyrun
 		}
 	}
 
-	/* Disabled for now, not sure how to make it spawn as a friendly
-	// REFUGEE POD
-	[HarmonyPatch(typeof(ThingSetMaker_RefugeePod), "Generate")]
-	[HarmonyPatch(new Type[] { typeof(ThingSetMakerParams), typeof(List<Thing>) })]
-	static class ThingSetMaker_RefugeePod_Generate_Patch
-	{
-		static bool Prefix(ThingSetMaker_RefugeePod __instance, ref ThingSetMakerParams parms, ref List<Thing> outThings)
-		{
-			Log.Message("Refugee Pod Reunion");
-			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
-			{
-				outThings.Add(pawn);
-				HealthUtility.DamageUntilDowned(pawn, true);
-				return false;
-			}
-			return true;
-		}
-	}
-	*/
-
-	// DEBUG MENU ACTION
+	// DEBUG MENU ACTION --------------------------------------------------------------------------
 	[HarmonyPatch(typeof(Dialog_DebugActionsMenu), "DoListingItems_AllModePlayActions")]
 	[HarmonyPatch(new Type[] { })]
 	static class Dialog_DebugActionsMenu_DoListingItems_AllModePlayActions_Patch
