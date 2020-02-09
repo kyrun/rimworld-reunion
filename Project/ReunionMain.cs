@@ -30,6 +30,16 @@ namespace Kyrun
 		}
 	}
 
+	[StaticConstructorOnStartup]
+	class Main
+	{
+		static Main()
+		{
+			var harmony = HarmonyInstance.Create("kyrun.mod.reunion");
+			harmony.PatchAll(Assembly.GetExecutingAssembly());
+		}
+	}
+
 	class ReunionMain : Mod
 	{
 		ReunionSettings _settings;
@@ -37,8 +47,6 @@ namespace Kyrun
 		// Constructor
 		public ReunionMain(ModContentPack content) : base(content)
 		{
-			var harmony = HarmonyInstance.Create("kyrun.mod.reunion");
-			harmony.PatchAll(Assembly.GetExecutingAssembly());
 			_settings = GetSettings<ReunionSettings>();
 		}
 
