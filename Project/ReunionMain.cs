@@ -71,12 +71,12 @@ namespace Kyrun
 		}
 	}
 
-	class ReunionMain : Mod
+	class ReunionMod : Mod
 	{
 		ReunionSettings _settings;
 
 		// Constructor
-		public ReunionMain(ModContentPack content) : base(content)
+		public ReunionMod(ModContentPack content) : base(content)
 		{
 			_settings = GetSettings<ReunionSettings>();
 		}
@@ -140,7 +140,7 @@ namespace Kyrun
 
 		public Reunion(Game game) : base()
 		{
-			Settings = LoadedModManager.GetMod<ReunionMain>().GetSettings<ReunionSettings>();
+			Settings = LoadedModManager.GetMod<ReunionMod>().GetSettings<ReunionSettings>();
 		}
 
 		// Initialise
@@ -159,11 +159,11 @@ namespace Kyrun
 					var newPawn = PawnGenerator.GeneratePawn(PawnKindDef.Named("SpaceRefugee"));
 					newPawn.story.traits.GainTrait(Trait_Ally);
 					Current.Game.World.worldPawns.PassToWorld(newPawn);
-					Log.Message("Generate Testing Pawn: " + newPawn.Name);
+					Msg("Generate Testing Pawn: " + newPawn.Name);
 				}
 #endif
 			}
-			Log.Message("Reunion Event Probability: " + _eventProbability);
+			Msg("Reunion Event Probability: " + _eventProbability);
 
 			ListAlly.Clear(); // clear the list (a reload might have a populated list)
 			foreach (var pawn in Current.Game.World.worldPawns.AllPawnsAlive)
@@ -177,11 +177,11 @@ namespace Kyrun
 					if (trait.Label.Contains(TRAIT_ALLY))
 					{
 						ListAlly.Add(pawn);
-						Log.Message("Found Ally: " + pawn.Name);
+						Msg("Found Ally: " + pawn.Name);
 					}
 				}
 			}
-			Log.Message("Reunion is Ready");
+			Msg("Reunion is Ready");
 		}
 
 		public static bool ShouldSpawnPawn(out Pawn pawn)
@@ -189,7 +189,7 @@ namespace Kyrun
 			pawn = null;
 			if (ListAlly.Count <= 0)
 			{
-				Log.Message("No more to spawn!");
+				Msg("No more to spawn!");
 				return false; // no more form list, don't need to check
 			}
 
@@ -202,24 +202,13 @@ namespace Kyrun
 			{
 				var oldProb = _eventProbability;
 				_eventProbability = Settings.minimumProbability;
-				Log.Message("Roll success!: " + roll + " vs " + oldProb + ", probability reset to " + _eventProbability);
 
 				var randomIndex = Random.Range(0, ListAlly.Count);
 				pawn = ListAlly[randomIndex];
-				ListAlly.RemoveAt(randomIndex);
-
 				pawn.SetFactionDirect(null); // remove faction, if any
 
-				var trait = pawn.story.traits.GetTrait(TraitDef_Character);
-				if (trait != null)
-				{
-					pawn.story.traits.allTraits.Remove(trait);
-				}
+				Msg("Roll success!: " + roll + " vs " + oldProb + ", probability reset to " + _eventProbability + ". Pawn chosen: " + pawn.Name);
 
-				if (ListAlly.Count == 0)
-				{
-					Log.Message("All Reunion Pawns are spawned!");
-				}
 				return true;
 			}
 			else // not happening, try again later
@@ -227,8 +216,29 @@ namespace Kyrun
 				var oldProb = _eventProbability;
 				_eventProbability += Settings.probabilityIncrementStep;
 				_eventProbability = Math.Max(_eventProbability, 100); // cap at 100
-				Log.Message("Roll failed: " + roll + " vs " + oldProb + ", probability incremented to " + _eventProbability);
+				Msg("Roll failed: " + roll + " vs " + oldProb + ", probability incremented to " + _eventProbability);
 				return false;
+			}
+		}
+
+		public static void ConfirmJoin(Pawn pawn)
+		{
+			var trait = pawn.story.traits.GetTrait(TraitDef_Character);
+			if (trait != null)
+			{
+				pawn.story.traits.allTraits.Remove(trait);
+			}
+			if (ListAlly.Contains(pawn))
+			{
+				ListAlly.Remove(pawn);
+				if (ListAlly.Count == 0)
+				{
+					Msg("All Pawns have joined!");
+				}
+			}
+			else
+			{
+				Warn("List does not contain pawn named " + pawn.Name + " but pawn joined anyway!");
 			}
 		}
 
@@ -238,6 +248,16 @@ namespace Kyrun
 			Scribe_Values.Look(ref _eventProbability, SAVE_KEY, Settings.minimumProbability);
 
 			base.ExposeData();
+		}
+
+		public static void Msg(string msg)
+		{
+			Log.Message("[Reunion] " + msg);
+		}
+
+		public static void Warn(string msg)
+		{
+			Log.Warning("[Reunion] " + msg);
 		}
 	}
 
@@ -259,7 +279,7 @@ namespace Kyrun
 			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.WandererJoins]) return true;
 
 #if TESTING
-			Log.Message("[Reunion] Wanderer Joins");
+			Reunion.Msg("Wanderer Joins");
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
@@ -270,6 +290,7 @@ namespace Kyrun
 					return false;
 				}
 
+				Reunion.ConfirmJoin(pawn);
 				pawn.SetFaction(Faction.OfPlayer, null);
 				GenSpawn.Spawn(pawn, loc, map, WipeMode.Vanish);
 				string text = __instance.def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN");
@@ -300,10 +321,11 @@ namespace Kyrun
 			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.RefugeePodCrash]) return true;
 
 #if TESTING
-			Log.Message("[Reunion] Refugee Pod Crash");
+			Reunion.Msg("Refugee Pod Crash");
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
+				Reunion.ConfirmJoin(pawn);
 				outThings.Add(pawn);
 				HealthUtility.DamageUntilDowned(pawn, true);
 				return false;
@@ -327,7 +349,7 @@ namespace Kyrun
 			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.RefugeeChased]) return true;
 
 #if TESTING
-			Log.Message("[Reunion] Refugee Chased");
+			Reunion.Msg("Refugee Chased");
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
@@ -383,6 +405,7 @@ namespace Kyrun
 				diaOption.action = delegate
 				{
 					GenSpawn.Spawn(refugee, spawnSpot, map, WipeMode.Vanish);
+					Reunion.ConfirmJoin(refugee);
 					refugee.SetFaction(Faction.OfPlayer, null);
 					CameraJumper.TryJump(refugee);
 					QueuedIncident qi = new QueuedIncident(new FiringIncident(IncidentDefOf.RaidEnemy, null, raidParms), Find.TickManager.TicksGame + RaidDelay.RandomInRange, 0);
@@ -423,10 +446,11 @@ namespace Kyrun
 			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.PrisonerRescue]) return true;
 
 #if TESTING
-			Log.Message("[Reunion] Prisoner Rescue");
+			Reunion.Msg("Prisoner Rescue");
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
+				Reunion.ConfirmJoin(pawn);
 				pawn.guest.SetGuestStatus(hostFaction, true);
 				__result = pawn;
 				return false;
@@ -447,10 +471,11 @@ namespace Kyrun
 			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.DownedRefugee]) return true;
 
 #if TESTING
-			Log.Message("[Reunion] Downed Refugee");
+			Reunion.Msg("Downed Refugee");
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
+				Reunion.ConfirmJoin(pawn);
 				HealthUtility.DamageUntilDowned(pawn, false);
 				HealthUtility.DamageLegsUntilIncapableOfMoving(pawn, false);
 				__result = pawn;
@@ -483,7 +508,7 @@ namespace Kyrun
 						var trait = p.story.traits.GetTrait(Reunion.TraitDef_Character);
 						if (trait.Label == Reunion.Trait_Ally.Label)
 						{
-							Log.Message(p.Name + " gains the trait \"" + Reunion.Trait_Ally.Label + "\".");
+							Reunion.Msg(p.Name + " gains the trait \"" + Reunion.Trait_Ally.Label + "\".");
 						}
 					}
 				};
