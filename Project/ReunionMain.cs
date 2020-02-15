@@ -1,4 +1,4 @@
-﻿#define TESTING
+﻿//#define TESTING
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -155,7 +155,8 @@ namespace Kyrun
 			{
 				_eventProbability = Settings.minimumProbability;
 #if TESTING
-				for (int i = 0; i < 5; ++i)
+				const int TOTAL = 5;
+				for (int i = 0; i < TOTAL; ++i)
 				{
 					var pgr = new PawnGenerationRequest(PawnKindDef.Named("SpaceRefugee"), null,
 						PawnGenerationContext.NonPlayer, -1, true);
@@ -163,7 +164,6 @@ namespace Kyrun
 					newPawn.story.traits.GainTrait(Trait_Ally);
 					newPawn.Name = NameTriple.FromString("ReunionPawn" + i);
 					Current.Game.World.worldPawns.PassToWorld(newPawn);
-					Msg("generated " + newPawn.Name);
 				}
 #endif
 			}
@@ -232,7 +232,6 @@ namespace Kyrun
 			if (trait != null)
 			{
 				pawn.story.traits.allTraits.Remove(trait);
-				Log.Message("REMOVED TRAIT FROM " + pawn.Name);
 				return true;
 			}
 
@@ -303,6 +302,7 @@ namespace Kyrun
 	{
 		static void Postfix() => Reunion.Init();
 	}
+
 
 	// GET WORLD PAWNS ----------------------------------------------------------------------------
 	// Ensure that vanilla game NEVER pulls Reunion pawns for any other reason
@@ -395,6 +395,7 @@ namespace Kyrun
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
+				Reunion.SanitizePawn(pawn);
 				outThings.Add(pawn);
 				HealthUtility.DamageUntilDowned(pawn, true);
 				return false;
@@ -521,6 +522,7 @@ namespace Kyrun
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
 				Reunion.TryRemoveFromList(pawn, Reunion.ListAlly);
+				Find.WorldPawns.RemovePawn(pawn);
 				pawn.guest.SetGuestStatus(hostFaction, true);
 				__result = pawn;
 				return false;
@@ -546,6 +548,7 @@ namespace Kyrun
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
 				Reunion.TryRemoveFromList(pawn, Reunion.ListAlly);
+				Find.WorldPawns.RemovePawn(pawn);
 				HealthUtility.DamageUntilDowned(pawn, false);
 				HealthUtility.DamageLegsUntilIncapableOfMoving(pawn, false);
 				__result = pawn;
@@ -612,6 +615,7 @@ namespace Kyrun
 			methodDebugActionPrintAllyList.Invoke(__instance, new object[] { "Print \"Ally\" list", actionPrintAllyList });
 		}
 
+#if TESTING
 		// DEBUG to increase chance of accidental spawn
 		[HarmonyPatch(typeof(PawnGenerator), "ChanceToRedressAnyWorldPawn")]
 		[HarmonyPatch(new Type[] { typeof(PawnGenerationRequest) })]
@@ -622,5 +626,6 @@ namespace Kyrun
 				__result = 1f;
 			}
 		}
+#endif
 	}
 }
