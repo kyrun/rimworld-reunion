@@ -1,6 +1,7 @@
-﻿//#define TESTING
+﻿#define TESTING
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using RimWorld;
 using Verse;
@@ -156,10 +157,13 @@ namespace Kyrun
 #if TESTING
 				for (int i = 0; i < 5; ++i)
 				{
-					var newPawn = PawnGenerator.GeneratePawn(PawnKindDef.Named("SpaceRefugee"));
+					var pgr = new PawnGenerationRequest(PawnKindDef.Named("SpaceRefugee"), null,
+						PawnGenerationContext.NonPlayer, -1, true);
+					var newPawn = PawnGenerator.GeneratePawn(pgr);
 					newPawn.story.traits.GainTrait(Trait_Ally);
+					newPawn.Name = NameTriple.FromString("ReunionPawn" + i);
 					Current.Game.World.worldPawns.PassToWorld(newPawn);
-					Msg("Generate Testing Pawn: " + newPawn.Name);
+					Msg("generated " + newPawn.Name);
 				}
 #endif
 			}
@@ -194,7 +198,7 @@ namespace Kyrun
 			}
 
 #if TESTING
-			//_eventProbability = 100;
+			_eventProbability = 100;
 #endif
 
 			var roll = Random.Range(0, 100);
@@ -221,25 +225,45 @@ namespace Kyrun
 			}
 		}
 
-		public static void ConfirmJoin(Pawn pawn)
+		public static bool TryRemoveTrait(Pawn pawn)
 		{
 			var trait = pawn.story.traits.GetTrait(TraitDef_Character);
+
 			if (trait != null)
 			{
 				pawn.story.traits.allTraits.Remove(trait);
+				Log.Message("REMOVED TRAIT FROM " + pawn.Name);
+				return true;
 			}
-			if (ListAlly.Contains(pawn))
+
+			return false;
+		}
+
+		public static bool TryRemoveFromList(Pawn pawn, List<Pawn> list)
+		{
+			if (list.Contains(pawn))
 			{
-				ListAlly.Remove(pawn);
-				if (ListAlly.Count == 0)
+				list.Remove(pawn);
+				if (list.Count == 0)
 				{
 					Msg("All Pawns have joined!");
 				}
+#if TESTING
+				else
+				{
+					PrintAllyList();
+				}
+#endif
+				return true;
 			}
-			else
-			{
-				Warn("List does not contain pawn named " + pawn.Name + " but pawn joined anyway!");
-			}
+
+			return false;
+		}
+
+		public static void SanitizePawn(Pawn pawn)
+		{
+			TryRemoveTrait(pawn);
+			TryRemoveFromList(pawn, ListAlly);
 		}
 
 		// Save the variables
@@ -248,6 +272,18 @@ namespace Kyrun
 			Scribe_Values.Look(ref _eventProbability, SAVE_KEY, Settings.minimumProbability);
 
 			base.ExposeData();
+		}
+
+		public static void PrintAllyList()
+		{
+			const string DELIMITER = ", ";
+			var str = "";
+			foreach (var p in ListAlly)
+			{
+				str += p.Name + DELIMITER;
+			}
+			if (str != "") str = str.Substring(0, str.Length - DELIMITER.Length); // truncate last delimiter
+			Msg("Ally Pawns In World Pool: " + str);
 		}
 
 		public static void Msg(string msg)
@@ -266,6 +302,41 @@ namespace Kyrun
 	internal static class Verse_Game_FinalizeInit
 	{
 		static void Postfix() => Reunion.Init();
+	}
+
+	// GET WORLD PAWNS ----------------------------------------------------------------------------
+	// Ensure that vanilla game NEVER pulls Reunion pawns for any other reason
+	[HarmonyPatch(typeof(RimWorld.Planet.WorldPawns), "GetPawnsBySituation")]
+	[HarmonyPatch(new Type[] { typeof(RimWorld.Planet.WorldPawnSituation) })]
+	static class WorldPawns_GetPawnsBySituation_Patch
+	{
+		static void Postfix(ref IEnumerable<Pawn> __result, RimWorld.Planet.WorldPawns __instance, RimWorld.Planet.WorldPawnSituation situation)
+		{
+			__result = from pawn in __result
+					   where (!pawn.RaceProps.Humanlike || // not human
+					   pawn.story.traits.GetTrait(Reunion.TraitDef_Character) == null) // human with no Reunion trait
+					   select pawn;
+		}
+	}
+
+
+	// SPAWN --------------------------------------------------------------------------------------
+	// Whenever a Pawn spawns on any map, remove Ally trait and clear from Ally list
+	[HarmonyPatch(typeof(GenSpawn), "Spawn")]
+	[HarmonyPatch(new Type[] { typeof(Thing), typeof(IntVec3), typeof(Map), typeof(WipeMode) })]
+	static class GenSpawn_Spawn_Patch
+	{
+		static void Postfix(Thing __result, Thing newThing, IntVec3 loc, Map map, WipeMode wipeMode)
+		{
+			if (__result is Pawn)
+			{
+				var pawn = (Pawn)__result;
+				if (pawn.RaceProps.Humanlike)
+				{
+					Reunion.SanitizePawn(pawn);
+				}
+			}
+		}
 	}
 
 
@@ -290,7 +361,6 @@ namespace Kyrun
 					return false;
 				}
 
-				Reunion.ConfirmJoin(pawn);
 				pawn.SetFaction(Faction.OfPlayer, null);
 				GenSpawn.Spawn(pawn, loc, map, WipeMode.Vanish);
 				string text = __instance.def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN");
@@ -325,7 +395,6 @@ namespace Kyrun
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
-				Reunion.ConfirmJoin(pawn);
 				outThings.Add(pawn);
 				HealthUtility.DamageUntilDowned(pawn, true);
 				return false;
@@ -405,7 +474,6 @@ namespace Kyrun
 				diaOption.action = delegate
 				{
 					GenSpawn.Spawn(refugee, spawnSpot, map, WipeMode.Vanish);
-					Reunion.ConfirmJoin(refugee);
 					refugee.SetFaction(Faction.OfPlayer, null);
 					CameraJumper.TryJump(refugee);
 					QueuedIncident qi = new QueuedIncident(new FiringIncident(IncidentDefOf.RaidEnemy, null, raidParms), Find.TickManager.TicksGame + RaidDelay.RandomInRange, 0);
@@ -423,6 +491,8 @@ namespace Kyrun
 				{
 					// EDIT: Skip this step because the pawn is already in WorldPawns
 					// Find.WorldPawns.PassToWorld(refugee, RimWorld.Planet.PawnDiscardDecideMode.Decide);
+
+					// Instead, Reunion Pawn stays in the world, with trait unchanged
 				};
 				diaOption3.link = diaNode2;
 				diaNode.options.Add(diaOption3);
@@ -450,7 +520,7 @@ namespace Kyrun
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
-				Reunion.ConfirmJoin(pawn);
+				Reunion.TryRemoveFromList(pawn, Reunion.ListAlly);
 				pawn.guest.SetGuestStatus(hostFaction, true);
 				__result = pawn;
 				return false;
@@ -475,7 +545,7 @@ namespace Kyrun
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
-				Reunion.ConfirmJoin(pawn);
+				Reunion.TryRemoveFromList(pawn, Reunion.ListAlly);
 				HealthUtility.DamageUntilDowned(pawn, false);
 				HealthUtility.DamageLegsUntilIncapableOfMoving(pawn, false);
 				__result = pawn;
@@ -496,9 +566,11 @@ namespace Kyrun
 			MethodInfo methodDoLabel = __instance.GetType().GetMethod("DoLabel", BindingFlags.NonPublic | BindingFlags.Instance);
 			methodDoLabel.Invoke(__instance, new object[] { "Mod - Reunion (by Kyrun)" });
 
-			Action action = delegate
+			// *** Add Ally Trait ***
+			Action actionAddAllyTrait = delegate
 			{
 				List<DebugMenuOption> list = new List<DebugMenuOption>();
+
 				Action<Pawn> act = delegate (Pawn p)
 				{
 					if (p != null && p.story != null && !p.story.traits.HasTrait(Reunion.TraitDef_Character))
@@ -524,10 +596,31 @@ namespace Kyrun
 						}));
 					}
 				}
+
 				Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
+
 			};
-			MethodInfo methodDebugAction = __instance.GetType().GetMethod("DebugAction", BindingFlags.NonPublic | BindingFlags.Instance);
-			methodDebugAction.Invoke(__instance, new object[] { "Make world pawn \"Ally\"...", action });
+			MethodInfo methodDebugActionAddAllyTrait = __instance.GetType().GetMethod("DebugAction", BindingFlags.NonPublic | BindingFlags.Instance);
+			methodDebugActionAddAllyTrait.Invoke(__instance, new object[] { "Make world pawn \"Ally\"...", actionAddAllyTrait });
+
+			// *** Print Ally List ***
+			Action actionPrintAllyList = delegate
+			{
+				Reunion.PrintAllyList();
+			};
+			MethodInfo methodDebugActionPrintAllyList = __instance.GetType().GetMethod("DebugAction", BindingFlags.NonPublic | BindingFlags.Instance);
+			methodDebugActionPrintAllyList.Invoke(__instance, new object[] { "Print \"Ally\" list", actionPrintAllyList });
+		}
+
+		// DEBUG to increase chance of accidental spawn
+		[HarmonyPatch(typeof(PawnGenerator), "ChanceToRedressAnyWorldPawn")]
+		[HarmonyPatch(new Type[] { typeof(PawnGenerationRequest) })]
+		static class PawnGenerator_ChanceToRedressAnyWorldPawn_Patch
+		{
+			static void Postfix(ref float __result, PawnGenerationRequest request)
+			{
+				__result = 1f;
+			}
 		}
 	}
 }
