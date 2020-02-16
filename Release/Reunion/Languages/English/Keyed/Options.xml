@@ -5,6 +5,7 @@
   <Reunion.ProbabilityIncrementStep>Probability To Increment After Fail To Spawn (X/100)</Reunion.ProbabilityIncrementStep>
   <Reunion.AllowEventWandererJoins>Allow "Wanderer Joins" Event</Reunion.AllowEventWandererJoins>
   <Reunion.AllowEventRefugeeChased>Allow "Refugee Chased" Event</Reunion.AllowEventRefugeeChased>
-  <Reunion.AllowEventPrisonerRescue>Allow "Prisoner Rescue" Event </Reunion.AllowEventPrisonerRescue>
+  <Reunion.AllowEventPrisonerRescue>Allow "Prisoner Rescue" Event</Reunion.AllowEventPrisonerRescue>
   <Reunion.AllowEventDownedRefugee>Allow "Downed Refugee" Event</Reunion.AllowEventDownedRefugee>
+  <Reunion.AllowEventRefugeePodCrash>Allow "Refugee Pod Crash" Event</Reunion.AllowEventRefugeePodCrash>
 </LanguageData>
