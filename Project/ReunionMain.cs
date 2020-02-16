@@ -15,10 +15,10 @@ namespace Kyrun
 		public enum Event
 		{
 			WandererJoins,
-			RefugeePodCrash,
 			RefugeeChased,
 			PrisonerRescue,
-			DownedRefugee
+			DownedRefugee,
+			RefugeePodCrash,
 		};
 
 		public int minimumProbability = 10;
@@ -28,10 +28,10 @@ namespace Kyrun
 		public Dictionary<Event, bool> EventAllow = new Dictionary<Event, bool>()
 		{
 			{ Event.WandererJoins, true },
-			{ Event.RefugeePodCrash, true },
 			{ Event.RefugeeChased, true },
 			{ Event.PrisonerRescue, true },
 			{ Event.DownedRefugee, true },
+			{ Event.RefugeePodCrash, false },
 		};
 
 		// Save Mod Settings
@@ -44,7 +44,7 @@ namespace Kyrun
 			{
 				bool allowEvent = EventAllow[evtType];
 				var saveKey = CreateSaveKey(evtType);
-				Scribe_Values.Look(ref allowEvent, saveKey, true);
+				Scribe_Values.Look(ref allowEvent, saveKey, allowEvent);
 				EventAllow[evtType] = allowEvent;
 			}
 
