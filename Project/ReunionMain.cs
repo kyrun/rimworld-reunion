@@ -155,7 +155,7 @@ namespace Kyrun
 			{
 				_eventProbability = Settings.minimumProbability;
 #if TESTING
-				const int TOTAL = 5;
+				const int TOTAL = 0;
 				for (int i = 0; i < TOTAL; ++i)
 				{
 					var pgr = new PawnGenerationRequest(PawnKindDef.Named("SpaceRefugee"), null,
@@ -219,7 +219,7 @@ namespace Kyrun
 			{
 				var oldProb = _eventProbability;
 				_eventProbability += Settings.probabilityIncrementStep;
-				_eventProbability = Math.Max(_eventProbability, 100); // cap at 100
+				_eventProbability = Math.Min(_eventProbability, 100); // cap at 100
 				Msg("Roll failed: " + roll + " vs " + oldProb + ", probability incremented to " + _eventProbability);
 				return false;
 			}
@@ -396,6 +396,7 @@ namespace Kyrun
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
 				Reunion.SanitizePawn(pawn);
+				pawn.mindState.WillJoinColonyIfRescued = true; // still doesn't 100% rescue :(
 				outThings.Add(pawn);
 				HealthUtility.DamageUntilDowned(pawn, true);
 				return false;
