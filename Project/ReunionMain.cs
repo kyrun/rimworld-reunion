@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using RimWorld;
 using Verse;
-using Harmony;
+using HarmonyLib;
 using Random = UnityEngine.Random;
 
 namespace Kyrun
@@ -15,7 +15,7 @@ namespace Kyrun
 		public enum Event
 		{
 			WandererJoins,
-			RefugeeChased,
+			//RefugeeChased,
 			PrisonerRescue,
 			DownedRefugee,
 			RefugeePodCrash,
@@ -28,7 +28,7 @@ namespace Kyrun
 		public Dictionary<Event, bool> EventAllow = new Dictionary<Event, bool>()
 		{
 			{ Event.WandererJoins, true },
-			{ Event.RefugeeChased, true },
+			//{ Event.RefugeeChased, true },
 			{ Event.PrisonerRescue, true },
 			{ Event.DownedRefugee, true },
 			{ Event.RefugeePodCrash, false },
@@ -37,18 +37,18 @@ namespace Kyrun
 		// Save Mod Settings
 		public override void ExposeData()
 		{
-			Scribe_Values.Look(ref minimumProbability, "minimumProbability", 10);
-			Scribe_Values.Look(ref probabilityIncrementStep, "probabilityIncrementStep", 10);
+			base.ExposeData();
+
+			Scribe_Values.Look(ref minimumProbability, "minimumProbability", 10, true);
+			Scribe_Values.Look(ref probabilityIncrementStep, "probabilityIncrementStep", 10, true);
 
 			foreach (Event evtType in Enum.GetValues(typeof(Event)))
 			{
 				bool allowEvent = EventAllow[evtType];
 				var saveKey = CreateSaveKey(evtType);
-				Scribe_Values.Look(ref allowEvent, saveKey, allowEvent);
+				Scribe_Values.Look(ref allowEvent, saveKey, allowEvent, true);
 				EventAllow[evtType] = allowEvent;
 			}
-
-			base.ExposeData();
 		}
 
 		public static string CreateSaveKey(Event eventType)
@@ -67,7 +67,7 @@ namespace Kyrun
 	{
 		static Main()
 		{
-			var harmony = HarmonyInstance.Create("kyrun.mod.reunion");
+			var harmony = new Harmony("kyrun.mod.reunion");
 			harmony.PatchAll(Assembly.GetExecutingAssembly());
 		}
 	}
@@ -155,7 +155,7 @@ namespace Kyrun
 			{
 				_eventProbability = Settings.minimumProbability;
 #if TESTING
-				const int TOTAL = 0;
+				const int TOTAL = 5;
 				for (int i = 0; i < TOTAL; ++i)
 				{
 					var pgr = new PawnGenerationRequest(PawnKindDef.Named("SpaceRefugee"), null,
@@ -259,7 +259,7 @@ namespace Kyrun
 			return false;
 		}
 
-		public static void SanitizePawn(Pawn pawn)
+		public static void PrepareForSpawning(Pawn pawn)
 		{
 			TryRemoveTrait(pawn);
 			TryRemoveFromList(pawn, ListAlly);
@@ -294,6 +294,8 @@ namespace Kyrun
 		{
 			Log.Warning("[Reunion] " + msg);
 		}
+
+
 	}
 
 	// Called on loading/new game
@@ -301,6 +303,18 @@ namespace Kyrun
 	internal static class Verse_Game_FinalizeInit
 	{
 		static void Postfix() => Reunion.Init();
+	}
+
+	[HarmonyPatch]
+	public class ReversePatch
+	{
+		[HarmonyReversePatch]
+		[HarmonyPatch(typeof(IncidentWorker), "SendStandardLetter")]
+		[HarmonyPatch(new Type[] { typeof(TaggedString), typeof(TaggedString), typeof(LetterDef),
+			typeof(IncidentParms), typeof(LookTargets), typeof(NamedArgument[]) })]
+		public static void SendStandardLetter(object instance, TaggedString baseLetterLabel, TaggedString baseLetterText, LetterDef baseLetterDef,
+			IncidentParms parms, LookTargets lookTargets, params NamedArgument[] textArgs)
+		{}
 	}
 
 
@@ -313,8 +327,8 @@ namespace Kyrun
 		static void Postfix(ref IEnumerable<Pawn> __result, RimWorld.Planet.WorldPawns __instance, RimWorld.Planet.WorldPawnSituation situation)
 		{
 			__result = from pawn in __result
-					   where (!pawn.RaceProps.Humanlike || // not human
-					   pawn.story.traits.GetTrait(Reunion.TraitDef_Character) == null) // human with no Reunion trait
+					   where (!pawn.RaceProps.Humanlike || // not humanlike
+					   pawn.story.traits.GetTrait(Reunion.TraitDef_Character) == null) // humanlike with no Reunion trait
 					   select pawn;
 		}
 	}
@@ -323,17 +337,17 @@ namespace Kyrun
 	// SPAWN --------------------------------------------------------------------------------------
 	// Whenever a Pawn spawns on any map, remove Ally trait and clear from Ally list
 	[HarmonyPatch(typeof(GenSpawn), "Spawn")]
-	[HarmonyPatch(new Type[] { typeof(Thing), typeof(IntVec3), typeof(Map), typeof(WipeMode) })]
+	[HarmonyPatch(new Type[] { typeof(Thing), typeof(IntVec3), typeof(Map), typeof(Rot4), typeof(WipeMode), typeof(bool) })]
 	static class GenSpawn_Spawn_Patch
 	{
-		static void Postfix(Thing __result, Thing newThing, IntVec3 loc, Map map, WipeMode wipeMode)
+		static void Postfix(Thing __result, Thing newThing, IntVec3 loc, Map map, Rot4 rot, WipeMode wipeMode, bool respawningAfterLoad = false)
 		{
 			if (__result is Pawn)
 			{
 				var pawn = (Pawn)__result;
 				if (pawn.RaceProps.Humanlike)
 				{
-					Reunion.SanitizePawn(pawn);
+					Reunion.PrepareForSpawning(pawn);
 				}
 			}
 		}
@@ -363,10 +377,11 @@ namespace Kyrun
 
 				pawn.SetFaction(Faction.OfPlayer, null);
 				GenSpawn.Spawn(pawn, loc, map, WipeMode.Vanish);
-				string text = __instance.def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN");
-				string label = __instance.def.letterLabel.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN");
-				PawnRelationUtility.TryAppendRelationsWithColonistsInfo(ref text, ref label, pawn);
-				Find.LetterStack.ReceiveLetter(label, text, LetterDefOf.PositiveEvent, pawn, null, null);
+
+				TaggedString baseLetterText = __instance.def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
+				TaggedString baseLetterLabel = __instance.def.letterLabel.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
+				PawnRelationUtility.TryAppendRelationsWithColonistsInfo(ref baseLetterText, ref baseLetterLabel, pawn);
+				ReversePatch.SendStandardLetter(__instance, baseLetterLabel, baseLetterText, LetterDefOf.PositiveEvent, parms, pawn, Array.Empty<NamedArgument>());
 
 				return false;
 			}
@@ -381,12 +396,12 @@ namespace Kyrun
 	}
 
 
-	// REFUGEE POD CRASH --------------------------------------------------------------------------
-	[HarmonyPatch(typeof(ThingSetMaker_RefugeePod), "Generate")]
-	[HarmonyPatch(new Type[] { typeof(ThingSetMakerParams), typeof(List<Thing>) })]
-	static class ThingSetMaker_RefugeePod_Generate_Patch
+	// TRANSPORT POD CRASH ------------------------------------------------------------------------
+	[HarmonyPatch(typeof(IncidentWorker_TransportPodCrash), "TryExecuteWorker")]
+	[HarmonyPatch(new Type[] { typeof(IncidentParms) })]
+	static class IncidentWorker_TransportPodCrash_Generate_Patch
 	{
-		static bool Prefix(ThingSetMaker_RefugeePod __instance, ref ThingSetMakerParams parms, ref List<Thing> outThings)
+		static bool Prefix(IncidentWorker_TransportPodCrash __instance, ref IncidentParms parms)
 		{
 			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.RefugeePodCrash]) return true;
 
@@ -395,17 +410,46 @@ namespace Kyrun
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
-				Reunion.SanitizePawn(pawn);
+				Reunion.PrepareForSpawning(pawn);
 				pawn.mindState.WillJoinColonyIfRescued = true; // still doesn't 100% rescue :(
-				outThings.Add(pawn);
 				HealthUtility.DamageUntilDowned(pawn, true);
+
+				Map map = (Map)parms.target;
+				List<Thing> things = new List<Thing>();
+				things.Add(pawn);
+				IntVec3 intVec = DropCellFinder.RandomDropSpot(map);
+				pawn.guest.getRescuedThoughtOnUndownedBecauseOfPlayer = true;
+				TaggedString baseLetterLabel = "LetterLabelRefugeePodCrash".Translate();
+				TaggedString taggedString = "RefugeePodCrash".Translate(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
+				taggedString += "\n\n";
+				if (pawn.Faction == null)
+				{
+					taggedString += "RefugeePodCrash_Factionless".Translate(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
+				}
+				else if (pawn.Faction.HostileTo(Faction.OfPlayer))
+				{
+					taggedString += "RefugeePodCrash_Hostile".Translate(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
+				}
+				else
+				{
+					taggedString += "RefugeePodCrash_NonHostile".Translate(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
+				}
+				PawnRelationUtility.TryAppendRelationsWithColonistsInfo(ref taggedString, ref baseLetterLabel, pawn);
+				ReversePatch.SendStandardLetter(__instance, baseLetterLabel, taggedString, LetterDefOf.NeutralEvent, parms, new TargetInfo(intVec, map, false), Array.Empty<NamedArgument>());
+				ActiveDropPodInfo activeDropPodInfo = new ActiveDropPodInfo();
+				activeDropPodInfo.innerContainer.TryAddRangeOrTransfer(things, true, false);
+				activeDropPodInfo.openDelay = 180;
+				activeDropPodInfo.leaveSlag = true;
+				DropPodUtility.MakeDropPodAt(intVec, map, activeDropPodInfo);
+
 				return false;
 			}
+
 			return true;
 		}
 	}
 
-
+	/* TODO!!!
 	// REFUGEE CHASED -----------------------------------------------------------------------------
 	[HarmonyPatch(typeof(IncidentWorker_RefugeeChased), "TryExecuteWorker")]
 	[HarmonyPatch(new Type[] { typeof(IncidentParms) })]
@@ -507,8 +551,9 @@ namespace Kyrun
 			return true;
 		}
 	}
+	*/
 
-	// PRISONER RESCUE ----------------------------------------------------------------------------
+	// OPPORTUNITY SITE: PRISONER WILLING TO JOIN -------------------------------------------------
 	[HarmonyPatch(typeof(PrisonerWillingToJoinQuestUtility), "GeneratePrisoner")]
 	[HarmonyPatch(new Type[] { typeof(int), typeof(Faction) })]
 	static class PrisonerWillingToJoinQuestUtility_GeneratePrisoner_Patch
@@ -534,7 +579,7 @@ namespace Kyrun
 	}
 
 
-	// DOWNED REFUGEE -----------------------------------------------------------------------------
+	// OPPORTUNITY SITE: DOWNED REFUGEE -----------------------------------------------------------
 	[HarmonyPatch(typeof(DownedRefugeeQuestUtility), "GenerateRefugee")]
 	[HarmonyPatch(new Type[] { typeof(int) })]
 	static class DownedRefugeeQuestUtility_GenerateRefugee_Patch
@@ -561,21 +606,24 @@ namespace Kyrun
 	}
 
 	// DEBUG MENU ACTION --------------------------------------------------------------------------
-	[HarmonyPatch(typeof(Dialog_DebugActionsMenu), "DoListingItems_AllModePlayActions")]
-	[HarmonyPatch(new Type[] { })]
-	static class Dialog_DebugActionsMenu_DoListingItems_AllModePlayActions_Patch
-	{
-		static void Postfix(Dialog_DebugActionsMenu __instance)
-		{
-			MethodInfo methodDoLabel = __instance.GetType().GetMethod("DoLabel", BindingFlags.NonPublic | BindingFlags.Instance);
-			methodDoLabel.Invoke(__instance, new object[] { "Mod - Reunion (by Kyrun)" });
 
+	[HarmonyPatch(typeof(Dialog_DebugActionsMenu))]
+	[HarmonyPatch(new Type[] { })]
+	[HarmonyPatch(MethodType.Constructor)]
+	static class Dialog_DebugActionsMenu_DoListingItems_Patch
+	{
+		const string CATEGORY = "Mod - Reunion (by Kyrun)";
+		static void Postfix(Dialog_DebugActionsMenu __instance, ref List<Dialog_DebugActionsMenu.DebugActionOption> ___debugActions)
+		{
 			// *** Add Ally Trait ***
-			Action actionAddAllyTrait = delegate
+			var debugAddAlly = new Dialog_DebugActionsMenu.DebugActionOption();
+			debugAddAlly.actionType = DebugActionType.Action;
+			debugAddAlly.label = "Make world pawn \"Ally\"...";
+			debugAddAlly.category = CATEGORY;
+			debugAddAlly.action = delegate
 			{
 				List<DebugMenuOption> list = new List<DebugMenuOption>();
-
-				Action<Pawn> act = delegate (Pawn p)
+				Action<Pawn> actionPawn = delegate (Pawn p)
 				{
 					if (p != null && p.story != null && !p.story.traits.HasTrait(Reunion.TraitDef_Character))
 					{
@@ -588,6 +636,7 @@ namespace Kyrun
 						}
 					}
 				};
+
 				foreach (Pawn current in Find.WorldPawns.AllPawnsAlive)
 				{
 					Pawn pLocal = current;
@@ -596,37 +645,45 @@ namespace Kyrun
 					{
 						list.Add(new DebugMenuOption(current.LabelShort, DebugMenuOptionMode.Action, delegate
 						{
-							act(pLocal);
+							actionPawn(pLocal);
 						}));
 					}
 				}
 
 				Find.WindowStack.Add(new Dialog_DebugOptionListLister(list));
-
 			};
-			MethodInfo methodDebugActionAddAllyTrait = __instance.GetType().GetMethod("DebugAction", BindingFlags.NonPublic | BindingFlags.Instance);
-			methodDebugActionAddAllyTrait.Invoke(__instance, new object[] { "Make world pawn \"Ally\"...", actionAddAllyTrait });
+			___debugActions.Add(debugAddAlly); // add to main list
 
 			// *** Print Ally List ***
-			Action actionPrintAllyList = delegate
+			var debugPrintAllyList = new Dialog_DebugActionsMenu.DebugActionOption();
+			debugPrintAllyList.actionType = DebugActionType.Action;
+			debugPrintAllyList.label = "Print \"Ally\" list";
+			debugPrintAllyList.category = CATEGORY;
+			debugPrintAllyList.action = delegate
 			{
-				Reunion.PrintAllyList();
+				if (Reunion.ListAlly.Count > 0)
+				{
+					Reunion.PrintAllyList();
+				}
+				else
+				{
+					Reunion.Msg("There are no allies in the spawn pool!");
+				}
 			};
-			MethodInfo methodDebugActionPrintAllyList = __instance.GetType().GetMethod("DebugAction", BindingFlags.NonPublic | BindingFlags.Instance);
-			methodDebugActionPrintAllyList.Invoke(__instance, new object[] { "Print \"Ally\" list", actionPrintAllyList });
+			___debugActions.Add(debugPrintAllyList); // add to main list
 		}
+	}
 
 #if TESTING
-		// DEBUG to increase chance of accidental spawn
-		[HarmonyPatch(typeof(PawnGenerator), "ChanceToRedressAnyWorldPawn")]
-		[HarmonyPatch(new Type[] { typeof(PawnGenerationRequest) })]
-		static class PawnGenerator_ChanceToRedressAnyWorldPawn_Patch
+	// DEBUG to increase chance of accidental spawn
+	[HarmonyPatch(typeof(PawnGenerator), "ChanceToRedressAnyWorldPawn")]
+	[HarmonyPatch(new Type[] { typeof(PawnGenerationRequest) })]
+	static class PawnGenerator_ChanceToRedressAnyWorldPawn_Patch
+	{
+		static void Postfix(ref float __result, PawnGenerationRequest request)
 		{
-			static void Postfix(ref float __result, PawnGenerationRequest request)
-			{
-				__result = 1f;
-			}
+			__result = 1f;
 		}
-#endif
 	}
+#endif
 }
