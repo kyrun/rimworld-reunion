@@ -2,8 +2,15 @@
 <ModMetaData>
 	<name>Reunion</name>
 	<author>Kyrun</author>
+	<packageId>Kyrun.Reunion</packageId>
 	<supportedVersions>
 		<li>1.0</li>
+		<li>1.1</li>
 	</supportedVersions>
+    <incompatibleWith>
+      <li>user19990313.RuntimeGC</li>
+      <li>Vaniat.IncidentPersonStat</li>
+      <li>newcolonist.NoPawnLeftBehind</li>
+    </incompatibleWith>
 	<description>Use Prepare Carefully to add the trait "(Reunion) Ally" to a pawn in the World pool. Your chances of encountering this pawn in events that let them join you will greatly increase.</description>
 </ModMetaData>
