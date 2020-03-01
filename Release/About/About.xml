@@ -8,9 +8,17 @@
 		<li>1.1</li>
 	</supportedVersions>
     <incompatibleWith>
-      <li>user19990313.RuntimeGC</li>
-      <li>Vaniat.IncidentPersonStat</li>
-      <li>newcolonist.NoPawnLeftBehind</li>
+      <li>user19990313210.RuntimeGC</li>
+      <li>Vaniat127.IncidentHPersonHStat</li>
+      <li>newcolonist115.NoHPawnHLeftHBehind</li>
     </incompatibleWith>
+	<modDependencies>
+    <li>
+        <packageId>brrainz.harmony</packageId>
+        <displayName>Harmony</displayName>
+        <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
+        <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
+    </li>
+</modDependencies>
 	<description>Use Prepare Carefully to add the trait "(Reunion) Ally" to a pawn in the World pool. Your chances of encountering this pawn in events that let them join you will greatly increase.</description>
 </ModMetaData>
