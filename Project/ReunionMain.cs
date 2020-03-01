@@ -374,8 +374,7 @@ namespace Kyrun
 				{
 					return false;
 				}
-
-				pawn.SetFaction(Faction.OfPlayer, null);
+				pawn.SetFactionDirect(Faction.OfPlayer);
 				GenSpawn.Spawn(pawn, loc, map, WipeMode.Vanish);
 
 				TaggedString baseLetterText = __instance.def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
