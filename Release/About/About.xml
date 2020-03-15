@@ -8,7 +8,6 @@
 		<li>1.1</li>
 	</supportedVersions>
     <incompatibleWith>
-      <li>user19990313210.RuntimeGC</li>
       <li>Vaniat127.IncidentHPersonHStat</li>
       <li>newcolonist115.NoHPawnHLeftHBehind</li>
     </incompatibleWith>
