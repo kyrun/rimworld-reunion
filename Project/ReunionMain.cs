@@ -122,8 +122,8 @@ namespace Kyrun
 
 	class Reunion : GameComponent
 	{
-		// Track all pawns
-		public static List<Pawn> ListAlly = new List<Pawn>();
+		public static List<Pawn> ListAllyAvailable = new List<Pawn>();
+		public static List<string> ListAllySpawned = new List<string>();
 
 		// Probabilities
 		static int _eventProbability = -1;
@@ -131,46 +131,95 @@ namespace Kyrun
 		// Trait-related
 		public const string TRAIT_DEF_CHARACTER = "ReunionCharacter";
 		public const string TRAIT_ALLY = "Ally";
+		public const string DELIMITER = ", ";
 		public static TraitDef TraitDef_Character { get; private set; }
 		public static Trait Trait_Ally { get; private set; }
 
 		// Save key
-		const string SAVE_KEY = "ReunionProbability";
+		const string SAVE_KEY_PROBABILITY = "Reunion_Probability";
+		const string SAVE_KEY_LIST_ALLY_SPAWNED = "Reunion_AllySpawned";
+		const string SAVE_KEY_LIST_ALLY_AVAILABLE = "Reunion_AllyAvailable";
 
 		public static ReunionSettings Settings { get; private set; }
+
 
 		public Reunion(Game game) : base()
 		{
 			Settings = LoadedModManager.GetMod<ReunionMod>().GetSettings<ReunionSettings>();
 		}
 
-		// Initialise
-		public static void Init()
+
+		public static void PreInit()
 		{
 			TraitDef_Character = TraitDef.Named(TRAIT_DEF_CHARACTER);
 			Trait_Ally = new Trait(TraitDef_Character, 3, true);
 
-			Scribe_Values.Look(ref _eventProbability, SAVE_KEY);
-			if (_eventProbability < 0)
-			{
-				_eventProbability = Settings.minimumProbability;
-#if TESTING
-				const int TOTAL = 5;
-				for (int i = 0; i < TOTAL; ++i)
-				{
-					var pgr = new PawnGenerationRequest(PawnKindDef.Named("SpaceRefugee"), null,
-						PawnGenerationContext.NonPlayer, -1, true);
-					var newPawn = PawnGenerator.GeneratePawn(pgr);
-					newPawn.story.traits.GainTrait(Trait_Ally);
-					newPawn.Name = NameTriple.FromString("ReunionPawn" + i);
-					Current.Game.World.worldPawns.PassToWorld(newPawn);
-				}
-#endif
-			}
-			Msg("Reunion Event Probability: " + _eventProbability);
+			_eventProbability = Settings.minimumProbability;
 
-			ListAlly.Clear(); // clear the list (a reload might have a populated list)
-			foreach (var pawn in Current.Game.World.worldPawns.AllPawnsAlive)
+			Msg("Reunion Event Probability: " + _eventProbability);
+		}
+
+
+		public static void InitOnNewGame()
+		{
+			ListAllyAvailable.Clear();
+			ListAllySpawned.Clear();
+#if TESTING
+			/* */
+			const int TOTAL = 5;
+			for (int i = 0; i < TOTAL; ++i)
+			{
+				var pgr = new PawnGenerationRequest(PawnKindDef.Named("SpaceRefugee"), null,
+					PawnGenerationContext.NonPlayer, -1, true);
+				var newPawn = PawnGenerator.GeneratePawn(pgr);
+				newPawn.Name = NameTriple.FromString("ReunionPawn" + i);
+				ListAllyAvailable.Add(newPawn);
+			}
+			/* */
+#endif
+		}
+
+
+		public static void InitOnLoad()
+		{
+		}
+
+
+		public static void PostInit()
+		{
+			// Check player's existing colonists with traits and put into list for saving.
+			// This means that "Prepare Carefully" starting colonists with the Ally trait will be "found" again
+			// if they are somehow lost to the World pool.
+			IdentifyReunionPawnsFromList(PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction, (pawn) =>
+			{
+				if (!ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
+				{
+					ListAllySpawned.Add(pawn.GetUniqueLoadID());
+					Msg("Saving Player's pawn with Ally trait to Reunion list: " + pawn.Name);
+				}
+			}, TRAIT_ALLY);
+
+			// Check all World Pawns with trait and put into list for saving. Also remove trait.
+			// Use case 1: New game with "Prepare Carefully" creates World pawns.
+			// Use case 2: Backwards compatibility for loading existing saves from older version of this mod.
+			IdentifyReunionPawnsFromList(Current.Game.World.worldPawns.AllPawnsAlive, (pawn) =>
+			{
+				if (!ListAllyAvailable.Contains(pawn))
+				{
+					ListAllyAvailable.Add(pawn);
+				}
+				Msg("Saving World pawn with Ally trait to Reunion list: " + pawn.Name);
+				Find.WorldPawns.RemovePawn(pawn);
+			}, TRAIT_ALLY);
+
+#if TESTING
+			PrintAllyList();
+#endif
+		}
+
+		static void IdentifyReunionPawnsFromList(List<Pawn> listPawns, Action<Pawn> doToPawn, string traitKey)
+		{
+			foreach (var pawn in listPawns)
 			{
 				if (pawn == null || pawn.story == null || pawn.story.traits == null) continue;
 
@@ -178,38 +227,40 @@ namespace Kyrun
 				if (traits.HasTrait(TraitDef_Character))
 				{
 					var trait = traits.GetTrait(TraitDef_Character);
-					if (trait.Label.Contains(TRAIT_ALLY))
+					if (trait.Label.Contains(traitKey))
 					{
-						ListAlly.Add(pawn);
-						Msg("Found Ally: " + pawn.Name);
+						doToPawn?.Invoke(pawn);
+						TryRemoveTrait(pawn);
 					}
 				}
 			}
-			Msg("Reunion is Ready");
 		}
+
 
 		public static bool ShouldSpawnPawn(out Pawn pawn)
 		{
 			pawn = null;
-			if (ListAlly.Count <= 0)
+
+			if (ListAllyAvailable.Count <= 0)
 			{
 				Msg("No more to spawn!");
 				return false; // no more form list, don't need to check
 			}
 
 #if TESTING
-			_eventProbability = 100;
+			var roll = 0; // always happens
+#else
+			var roll = Random.Range(0, 100);
 #endif
 
-			var roll = Random.Range(0, 100);
 			if (roll < _eventProbability) // it's happening!
 			{
 				var oldProb = _eventProbability;
 				_eventProbability = Settings.minimumProbability;
 
-				var randomIndex = Random.Range(0, ListAlly.Count);
-				pawn = ListAlly[randomIndex];
-				pawn.SetFactionDirect(null); // remove faction, if any
+				var randomIndex = Random.Range(0, ListAllyAvailable.Count);
+				pawn = ListAllyAvailable[randomIndex];
+				SetupSpawn(pawn, ListAllyAvailable, ListAllySpawned);
 
 				Msg("Roll success!: " + roll + " vs " + oldProb + ", probability reset to " + _eventProbability + ". Pawn chosen: " + pawn.Name);
 
@@ -225,6 +276,7 @@ namespace Kyrun
 			}
 		}
 
+
 		public static bool TryRemoveTrait(Pawn pawn)
 		{
 			var trait = pawn.story.traits.GetTrait(TraitDef_Character);
@@ -238,51 +290,42 @@ namespace Kyrun
 			return false;
 		}
 
-		public static bool TryRemoveFromList(Pawn pawn, List<Pawn> list)
-		{
-			if (list.Contains(pawn))
-			{
-				list.Remove(pawn);
-				if (list.Count == 0)
-				{
-					Msg("All Pawns have joined!");
-				}
-#if TESTING
-				else
-				{
-					PrintAllyList();
-				}
-#endif
-				return true;
-			}
 
-			return false;
+		public static void SetupSpawn(Pawn pawn, List<Pawn> listAvailable, List<string> listJoined)
+		{
+			listAvailable.Remove(pawn);
+			listJoined.Add(pawn.GetUniqueLoadID());
+			pawn.SetFactionDirect(null); // remove faction, if any
+			pawn.workSettings.EnableAndInitializeIfNotAlreadyInitialized();
 		}
 
-		public static void PrepareForSpawning(Pawn pawn)
+
+		public static void ReturnToAvailable(Pawn pawn, List<string> listJoined, List<Pawn> listAvailable)
 		{
-			TryRemoveTrait(pawn);
-			TryRemoveFromList(pawn, ListAlly);
+			listJoined.Remove(pawn.GetUniqueLoadID());
+			listAvailable.Add(pawn);
+			Msg(pawn.Name + " was lost by the player and made available for Reunion to spawn again.");
 		}
 
-		// Save the variables
+
 		public override void ExposeData()
 		{
-			Scribe_Values.Look(ref _eventProbability, SAVE_KEY, Settings.minimumProbability);
+			Scribe_Values.Look(ref _eventProbability, SAVE_KEY_PROBABILITY, Settings.minimumProbability);
+			Scribe_Collections.Look(ref ListAllyAvailable, SAVE_KEY_LIST_ALLY_AVAILABLE, LookMode.Deep);
+			Scribe_Collections.Look(ref ListAllySpawned, SAVE_KEY_LIST_ALLY_SPAWNED, LookMode.Value);
 
 			base.ExposeData();
 		}
 
 		public static void PrintAllyList()
 		{
-			const string DELIMITER = ", ";
 			var str = "";
-			foreach (var p in ListAlly)
+			foreach (var ally in ListAllyAvailable)
 			{
-				str += p.Name + DELIMITER;
+				str += ally.Name + DELIMITER;
 			}
 			if (str != "") str = str.Substring(0, str.Length - DELIMITER.Length); // truncate last delimiter
-			Msg("Ally Pawns In World Pool: " + str);
+			Msg("Ally Pawns: " + str);
 		}
 
 		public static void Msg(string msg)
@@ -294,16 +337,62 @@ namespace Kyrun
 		{
 			Log.Warning("[Reunion] " + msg);
 		}
-
-
 	}
 
-	// Called on loading/new game
-	[HarmonyPatch(typeof(Game), "FinalizeInit")]
-	internal static class Verse_Game_FinalizeInit
+
+	// Called on new game
+	[HarmonyPatch(typeof(Game), "InitNewGame")]
+	internal static class Verse_Game_InitNewGame
 	{
-		static void Postfix() => Reunion.Init();
+		static void Postfix()
+		{
+			Reunion.PreInit();
+			Reunion.InitOnNewGame();
+			Reunion.PostInit();
+		}
 	}
+
+
+	// Called on load game
+	[HarmonyPatch(typeof(Game), "LoadGame")]
+	internal static class Verse_Game_LoadGame
+	{
+		static void Postfix()
+		{
+			Reunion.PreInit();
+			Reunion.InitOnLoad();
+			Reunion.PostInit();
+		}
+	}
+
+
+	[HarmonyPatch(typeof(RimWorld.Planet.WorldPawns), "PassToWorld")]
+	[HarmonyPatch(new Type[] { typeof(Pawn), typeof(RimWorld.Planet.PawnDiscardDecideMode) })]
+	static class WorldPawns_PassToWorld
+	{
+		static bool Prefix(RimWorld.Planet.WorldPawns __instance, ref Pawn pawn, ref RimWorld.Planet.PawnDiscardDecideMode discardMode)
+		{
+#if TESTING
+			if (Reunion.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
+			{
+				Reunion.Msg("Passed to world: " + pawn.Name);
+			}
+#endif
+			if (!KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
+				!PawnsFinder.AllCaravansAndTravelingTransportPods_Alive.Contains(pawn) && // ignore caravan/pods
+				Reunion.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
+			{
+				if (PawnComponentsUtility.HasSpawnedComponents(pawn))
+				{
+					PawnComponentsUtility.RemoveComponentsOnDespawned(pawn);
+				}
+				Reunion.ReturnToAvailable(pawn, Reunion.ListAllySpawned, Reunion.ListAllyAvailable);
+				return false;
+			}
+			return true;
+		}
+	}
+
 
 	[HarmonyPatch]
 	public class ReversePatch
@@ -314,43 +403,7 @@ namespace Kyrun
 			typeof(IncidentParms), typeof(LookTargets), typeof(NamedArgument[]) })]
 		public static void SendStandardLetter(object instance, TaggedString baseLetterLabel, TaggedString baseLetterText, LetterDef baseLetterDef,
 			IncidentParms parms, LookTargets lookTargets, params NamedArgument[] textArgs)
-		{}
-	}
-
-
-	// GET WORLD PAWNS ----------------------------------------------------------------------------
-	// Ensure that vanilla game NEVER pulls Reunion pawns for any other reason
-	[HarmonyPatch(typeof(RimWorld.Planet.WorldPawns), "GetPawnsBySituation")]
-	[HarmonyPatch(new Type[] { typeof(RimWorld.Planet.WorldPawnSituation) })]
-	static class WorldPawns_GetPawnsBySituation_Patch
-	{
-		static void Postfix(ref IEnumerable<Pawn> __result, RimWorld.Planet.WorldPawns __instance, RimWorld.Planet.WorldPawnSituation situation)
-		{
-			__result = from pawn in __result
-					   where (!pawn.RaceProps.Humanlike || // not humanlike
-					   pawn.story.traits.GetTrait(Reunion.TraitDef_Character) == null) // humanlike with no Reunion trait
-					   select pawn;
-		}
-	}
-
-
-	// SPAWN --------------------------------------------------------------------------------------
-	// Whenever a Pawn spawns on any map, remove Ally trait and clear from Ally list
-	[HarmonyPatch(typeof(GenSpawn), "Spawn")]
-	[HarmonyPatch(new Type[] { typeof(Thing), typeof(IntVec3), typeof(Map), typeof(Rot4), typeof(WipeMode), typeof(bool) })]
-	static class GenSpawn_Spawn_Patch
-	{
-		static void Postfix(Thing __result, Thing newThing, IntVec3 loc, Map map, Rot4 rot, WipeMode wipeMode, bool respawningAfterLoad = false)
-		{
-			if (__result is Pawn)
-			{
-				var pawn = (Pawn)__result;
-				if (pawn.RaceProps.Humanlike)
-				{
-					Reunion.PrepareForSpawning(pawn);
-				}
-			}
-		}
+		{ }
 	}
 
 
@@ -409,7 +462,6 @@ namespace Kyrun
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
-				Reunion.PrepareForSpawning(pawn);
 				pawn.mindState.WillJoinColonyIfRescued = true; // still doesn't 100% rescue :(
 				HealthUtility.DamageUntilDowned(pawn, true);
 
@@ -566,8 +618,6 @@ namespace Kyrun
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
-				Reunion.TryRemoveFromList(pawn, Reunion.ListAlly);
-				Find.WorldPawns.RemovePawn(pawn);
 				pawn.guest.SetGuestStatus(hostFaction, true);
 				__result = pawn;
 				return false;
@@ -592,8 +642,6 @@ namespace Kyrun
 #endif
 			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
 			{
-				Reunion.TryRemoveFromList(pawn, Reunion.ListAlly);
-				Find.WorldPawns.RemovePawn(pawn);
 				HealthUtility.DamageUntilDowned(pawn, false);
 				HealthUtility.DamageLegsUntilIncapableOfMoving(pawn, false);
 				__result = pawn;
@@ -624,23 +672,19 @@ namespace Kyrun
 				List<DebugMenuOption> list = new List<DebugMenuOption>();
 				Action<Pawn> actionPawn = delegate (Pawn p)
 				{
-					if (p != null && p.story != null && !p.story.traits.HasTrait(Reunion.TraitDef_Character))
+					if (p != null && p.story != null)
 					{
-						p.story.traits.GainTrait(Reunion.Trait_Ally);
-						Reunion.ListAlly.Add(p);
-						var trait = p.story.traits.GetTrait(Reunion.TraitDef_Character);
-						if (trait.Label == Reunion.Trait_Ally.Label)
-						{
-							Reunion.Msg(p.Name + " gains the trait \"" + Reunion.Trait_Ally.Label + "\".");
-						}
+						Reunion.TryRemoveTrait(p);
+						Reunion.ListAllyAvailable.Add(p);
+						Find.WorldPawns.RemovePawn(p);
+						Reunion.Msg(p.Name + " has been removed from the World and added to the Ally list.");
 					}
 				};
 
 				foreach (Pawn current in Find.WorldPawns.AllPawnsAlive)
 				{
 					Pawn pLocal = current;
-					if (current != null && current.story != null &&
-						!current.story.traits.HasTrait(Reunion.TraitDef_Character)) // don't list those already with the trait
+					if (current != null && current.story != null) // don't list those already with the trait
 					{
 						list.Add(new DebugMenuOption(current.LabelShort, DebugMenuOptionMode.Action, delegate
 						{
@@ -660,7 +704,7 @@ namespace Kyrun
 			debugPrintAllyList.category = CATEGORY;
 			debugPrintAllyList.action = delegate
 			{
-				if (Reunion.ListAlly.Count > 0)
+				if (Reunion.ListAllyAvailable.Count > 0)
 				{
 					Reunion.PrintAllyList();
 				}
@@ -672,17 +716,4 @@ namespace Kyrun
 			___debugActions.Add(debugPrintAllyList); // add to main list
 		}
 	}
-
-#if TESTING
-	// DEBUG to increase chance of accidental spawn
-	[HarmonyPatch(typeof(PawnGenerator), "ChanceToRedressAnyWorldPawn")]
-	[HarmonyPatch(new Type[] { typeof(PawnGenerationRequest) })]
-	static class PawnGenerator_ChanceToRedressAnyWorldPawn_Patch
-	{
-		static void Postfix(ref float __result, PawnGenerationRequest request)
-		{
-			__result = 1f;
-		}
-	}
-#endif
 }
