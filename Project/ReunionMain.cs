@@ -378,7 +378,8 @@ namespace Kyrun
 				Reunion.Msg("Passed to world: " + pawn.Name);
 			}
 #endif
-			if (!KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
+			if (!pawn.Destroyed && // ignore pawns destroyed for whatever reason
+				!KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
 				!PawnsFinder.AllCaravansAndTravelingTransportPods_Alive.Contains(pawn) && // ignore caravan/pods
 				Reunion.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
 			{
@@ -392,6 +393,41 @@ namespace Kyrun
 			return true;
 		}
 	}
+
+
+	/* for testing purposes *
+	[HarmonyPatch(typeof(StorytellerComp), "IncidentChanceFinal")]
+	[HarmonyPatch(new Type[] { typeof(IncidentDef) })]
+	static class StorytellerComp_IncidentChanceFinal
+	{
+		static void Postfix(ref float __result, ref IncidentWorker __instance, ref IncidentDef def)
+		{
+			if (Reunion.ListAllyAvailable.Count > 0)
+			{
+				if ((Reunion.Settings.EventAllow[ReunionSettings.Event.WandererJoins] && def.defName == "WandererJoin") ||
+					(Reunion.Settings.EventAllow[ReunionSettings.Event.RefugeePodCrash] && def.defName == "RefugeePodCrash"))
+				{
+					__result = 10000.0f;
+				}
+			}
+		}
+	}
+
+
+	[HarmonyPatch(typeof(StorytellerUtilityPopulation), "PopulationIntentForQuest", MethodType.Getter)]
+	static class StorytellerUtilityPopulation_PopulationIntentForQuest
+	{
+		static bool Prefix(ref float __result)
+		{
+			if (Reunion.ListAllyAvailable.Count > 0)
+			{
+				__result = 10000.0f;
+				return false;
+			}
+			return true;
+		}
+	}
+	/* */
 
 
 	[HarmonyPatch]
