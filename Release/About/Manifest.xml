@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Manifest>
   <identifier>kyrun.mod.reunion</identifier>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <targetVersions>
     <li>1.0.0</li>
     <li>1.1.0</li>
