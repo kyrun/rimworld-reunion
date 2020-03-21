@@ -129,9 +129,10 @@ namespace Kyrun
 		static int _eventProbability = -1;
 
 		// Trait-related
+		public const string DELIMITER = ", ";
 		public const string TRAIT_DEF_CHARACTER = "ReunionCharacter";
 		public const string TRAIT_ALLY = "Ally";
-		public const string DELIMITER = ", ";
+		public const int TRAIT_DEGREE_ALLY = 3;
 		public static TraitDef TraitDef_Character { get; private set; }
 		public static Trait Trait_Ally { get; private set; }
 
@@ -152,7 +153,7 @@ namespace Kyrun
 		public static void PreInit()
 		{
 			TraitDef_Character = TraitDef.Named(TRAIT_DEF_CHARACTER);
-			Trait_Ally = new Trait(TraitDef_Character, 3, true);
+			Trait_Ally = new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true);
 
 			_eventProbability = Settings.minimumProbability;
 
@@ -182,6 +183,8 @@ namespace Kyrun
 
 		public static void InitOnLoad()
 		{
+			if (ListAllyAvailable == null) ListAllyAvailable = new List<Pawn>();
+			if (ListAllySpawned == null) ListAllySpawned = new List<string>();
 		}
 
 
@@ -207,8 +210,8 @@ namespace Kyrun
 				if (!ListAllyAvailable.Contains(pawn))
 				{
 					ListAllyAvailable.Add(pawn);
+					Msg("Saving World pawn with Ally trait to Reunion list: " + pawn.Name);
 				}
-				Msg("Saving World pawn with Ally trait to Reunion list: " + pawn.Name);
 				Find.WorldPawns.RemovePawn(pawn);
 			}, TRAIT_ALLY);
 
@@ -227,7 +230,7 @@ namespace Kyrun
 				if (traits.HasTrait(TraitDef_Character))
 				{
 					var trait = traits.GetTrait(TraitDef_Character);
-					if (trait.Label.Contains(traitKey))
+					if (trait != null && trait.Label.Contains(traitKey))
 					{
 						doToPawn?.Invoke(pawn);
 						TryRemoveTrait(pawn);
@@ -328,14 +331,14 @@ namespace Kyrun
 			Msg("Ally Pawns: " + str);
 		}
 
-		public static void Msg(string msg)
+		public static void Msg(object o)
 		{
-			Log.Message("[Reunion] " + msg);
+			Log.Message("[Reunion] " + o);
 		}
 
-		public static void Warn(string msg)
+		public static void Warn(object o)
 		{
-			Log.Warning("[Reunion] " + msg);
+			Log.Warning("[Reunion] " + o);
 		}
 	}
 
@@ -746,7 +749,7 @@ namespace Kyrun
 				}
 				else
 				{
-					Reunion.Msg("There are no allies in the spawn pool!");
+					Reunion.Msg("There are no allies in the Ally list!");
 				}
 			};
 			___debugActions.Add(debugPrintAllyList); // add to main list
