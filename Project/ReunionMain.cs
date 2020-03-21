@@ -381,7 +381,8 @@ namespace Kyrun
 				Reunion.Msg("Passed to world: " + pawn.Name);
 			}
 #endif
-			if (!pawn.Destroyed && // ignore pawns destroyed for whatever reason
+			if (Current.Game.Info.RealPlayTimeInteracting > 0 && // prevent this from firing when the game hasn't even started proper
+				!pawn.Destroyed && // ignore pawns destroyed for whatever reason
 				!KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
 				!PawnsFinder.AllCaravansAndTravelingTransportPods_Alive.Contains(pawn) && // ignore caravan/pods
 				Reunion.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
