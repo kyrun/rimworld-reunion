@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RimWorld;
+using RimWorld.QuestGen;
+using RimWorld.Planet;
 using Verse;
 using HarmonyLib;
 using Random = UnityEngine.Random;
@@ -155,8 +157,6 @@ namespace Kyrun
 			TraitDef_Character = TraitDef.Named(TRAIT_DEF_CHARACTER);
 			Trait_Ally = new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true);
 
-			_eventProbability = Settings.minimumProbability;
-
 			Msg("Reunion Event Probability: " + _eventProbability);
 		}
 
@@ -215,6 +215,7 @@ namespace Kyrun
 				Find.WorldPawns.RemovePawn(pawn);
 			}, TRAIT_ALLY);
 
+			if (_eventProbability < 0) _eventProbability = Settings.minimumProbability;
 #if TESTING
 			PrintAllyList();
 #endif
@@ -399,7 +400,7 @@ namespace Kyrun
 	}
 
 
-	/* for testing purposes *
+	/* for testing purposes * /
 	[HarmonyPatch(typeof(StorytellerComp), "IncidentChanceFinal")]
 	[HarmonyPatch(new Type[] { typeof(IncidentDef) })]
 	static class StorytellerComp_IncidentChanceFinal
@@ -540,109 +541,75 @@ namespace Kyrun
 		}
 	}
 
-	/* TODO!!!
-	// REFUGEE CHASED -----------------------------------------------------------------------------
-	[HarmonyPatch(typeof(IncidentWorker_RefugeeChased), "TryExecuteWorker")]
-	[HarmonyPatch(new Type[] { typeof(IncidentParms) })]
-	static class IncidentWorker_RefugeeChased_TryExecuteWorker_Patch
+
+	/* Refugee Chased WIP
+	[HarmonyPatch(typeof(QuestNode_GeneratePawn), "RunInt")]
+	static class QuestNode_GeneratePawn_RunInt_Patch
 	{
-		private static readonly IntRange RaidDelay = new IntRange(1000, 4000);
-
-		private static readonly FloatRange RaidPointsFactorRange = new FloatRange(1f, 1.6f);
-
-		static bool Prefix(IncidentWorker_RefugeeChased __instance, ref IncidentParms parms)
+		static bool Prefix(QuestNode_GeneratePawn __instance)
 		{
-			if (!Reunion.Settings.EventAllow[ReunionSettings.Event.RefugeeChased]) return true;
-
-#if TESTING
-			Reunion.Msg("Refugee Chased");
-#endif
-			if (Reunion.ShouldSpawnPawn(out Pawn pawn))
+			if (Reunion.Settings.EventAllow[ReunionSettings.Event.RefugeeChased] &&
+				QuestGen.Root.defName == "ThreatReward_Raid_Joiner")
 			{
-				Map map = (Map)parms.target;
-				IntVec3 spawnSpot;
+				if (Reunion.ShouldSpawnPawn(out Pawn pawn))
+				{
+					Slate slate = QuestGen.slate;
 
-				var TryFindSpawnSpot = __instance.GetType().GetMethod("TryFindSpawnSpot", BindingFlags.NonPublic | BindingFlags.Instance);
-				object[] parameters = new object[] { map, null };
-				bool result = (bool)TryFindSpawnSpot.Invoke(__instance, parameters);
-				if (result)
-				{
-					spawnSpot = (IntVec3)parameters[1];
-				}
-				else
-				{
+					if (__instance.storeAs.GetValue(slate) != null)
+					{
+						QuestGen.slate.Set<Pawn>(__instance.storeAs.GetValue(slate), pawn, false);
+					}
+					if (__instance.addToList.GetValue(slate) != null)
+					{
+						QuestGenUtility.AddToOrMakeList(QuestGen.slate, __instance.addToList.GetValue(slate), pawn);
+					}
+					QuestGen.AddToGeneratedPawns(pawn);
+
+					// Vanilla code: adds the pawn to the World.
+					// For this mod, remove them from the available list and put them in the spawned list instead.
+
 					return false;
 				}
-
-				var TryFindEnemyFaction = __instance.GetType().GetMethod("TryFindEnemyFaction", BindingFlags.NonPublic | BindingFlags.Instance);
-				parameters = new object[] { null };
-				result = (bool)TryFindEnemyFaction.Invoke(__instance, parameters);
-				Faction faction;
-				if (result)
-				{
-					faction = (Faction)parameters[0];
-				}
-				else
-				{
-					return false;
-				}
-
-				int @int = Rand.Int;
-				IncidentParms raidParms = StorytellerUtility.DefaultParmsNow(IncidentCategoryDefOf.ThreatBig, map);
-				raidParms.forced = true;
-				raidParms.faction = faction;
-				raidParms.raidStrategy = RaidStrategyDefOf.ImmediateAttack;
-				raidParms.raidArrivalMode = PawnsArrivalModeDefOf.EdgeWalkIn;
-				raidParms.spawnCenter = spawnSpot;
-				raidParms.points = UnityEngine.Mathf.Max(raidParms.points * RaidPointsFactorRange.RandomInRange, faction.def.MinPointsToGeneratePawnGroup(PawnGroupKindDefOf.Combat));
-				raidParms.pawnGroupMakerSeed = new int?(@int);
-				PawnGroupMakerParms defaultPawnGroupMakerParms = IncidentParmsUtility.GetDefaultPawnGroupMakerParms(PawnGroupKindDefOf.Combat, raidParms, false);
-				defaultPawnGroupMakerParms.points = IncidentWorker_Raid.AdjustedRaidPoints(defaultPawnGroupMakerParms.points, raidParms.raidArrivalMode, raidParms.raidStrategy, defaultPawnGroupMakerParms.faction, PawnGroupKindDefOf.Combat);
-				IEnumerable<PawnKindDef> pawnKinds = PawnGroupMakerUtility.GeneratePawnKindsExample(defaultPawnGroupMakerParms);
-
-				Pawn refugee = pawn; // EDIT
-				refugee.relations.everSeenByPlayer = true;
-
-				string text = "RefugeeChasedInitial".Translate(refugee.Name.ToStringFull, refugee.story.Title, faction.def.pawnsPlural, faction.Name, refugee.ageTracker.AgeBiologicalYears, PawnUtility.PawnKindsToCommaList(pawnKinds, true), refugee.Named("PAWN"));
-				text = text.AdjustedFor(refugee, "PAWN");
-				PawnRelationUtility.TryAppendRelationsWithColonistsInfo(ref text, refugee);
-				DiaNode diaNode = new DiaNode(text);
-				DiaOption diaOption = new DiaOption("RefugeeChasedInitial_Accept".Translate());
-				diaOption.action = delegate
-				{
-					GenSpawn.Spawn(refugee, spawnSpot, map, WipeMode.Vanish);
-					refugee.SetFaction(Faction.OfPlayer, null);
-					CameraJumper.TryJump(refugee);
-					QueuedIncident qi = new QueuedIncident(new FiringIncident(IncidentDefOf.RaidEnemy, null, raidParms), Find.TickManager.TicksGame + RaidDelay.RandomInRange, 0);
-					Find.Storyteller.incidentQueue.Add(qi);
-				};
-				diaOption.resolveTree = true;
-				diaNode.options.Add(diaOption);
-				string text2 = "RefugeeChasedRejected".Translate(refugee.LabelShort, refugee);
-				DiaNode diaNode2 = new DiaNode(text2);
-				DiaOption diaOption2 = new DiaOption("OK".Translate());
-				diaOption2.resolveTree = true;
-				diaNode2.options.Add(diaOption2);
-				DiaOption diaOption3 = new DiaOption("RefugeeChasedInitial_Reject".Translate());
-				diaOption3.action = delegate
-				{
-					// EDIT: Skip this step because the pawn is already in WorldPawns
-					// Find.WorldPawns.PassToWorld(refugee, RimWorld.Planet.PawnDiscardDecideMode.Decide);
-
-					// Instead, Reunion Pawn stays in the world, with trait unchanged
-				};
-				diaOption3.link = diaNode2;
-				diaNode.options.Add(diaOption3);
-				string title = "RefugeeChasedTitle".Translate(map.Parent.Label);
-				Find.WindowStack.Add(new Dialog_NodeTreeWithFactionInfo(diaNode, faction, true, true, title));
-				Find.Archive.Add(new ArchivedDialog(diaNode.text, title, faction));
 
 				return false;
 			}
+
 			return true;
 		}
 	}
+
+
+	[HarmonyPatch(typeof(Quest), "CleanupQuestParts")]
+	static class Quest_CleanupQuestParts
+	{
+		static void Postfix(Quest __instance)
+		{
+			if (__instance.root.defName == "ThreatReward_Raid_Joiner" && __instance.State == QuestState.EndedOfferExpired)
+			{
+				// get the QuestPart_PawnsArrive part
+				var questPartPawnsArrive = __instance.PartsListForReading.Find((part) =>
+				{
+					return part is QuestPart_PawnsArrive;
+				}) as QuestPart_PawnsArrive;
+
+				if (questPartPawnsArrive != null && questPartPawnsArrive.pawns != null && questPartPawnsArrive.pawns.Count > 0)
+				{
+					// get pawns that spawned from Reunion
+					var listToReturn = questPartPawnsArrive.pawns.FindAll((pawn) =>
+					{
+						return Reunion.ListAllySpawned.Contains(pawn.GetUniqueLoadID());
+					});
+
+					foreach (var pawn in listToReturn)
+					{
+						Reunion.ReturnToAvailable(pawn, Reunion.ListAllySpawned, Reunion.ListAllyAvailable);
+					}
+				}
+			}
+		}
+	}
 	*/
+
 
 	// OPPORTUNITY SITE: PRISONER WILLING TO JOIN -------------------------------------------------
 	[HarmonyPatch(typeof(PrisonerWillingToJoinQuestUtility), "GeneratePrisoner")]
