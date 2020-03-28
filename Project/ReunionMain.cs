@@ -157,6 +157,7 @@ namespace Kyrun
 			TraitDef_Character = TraitDef.Named(TRAIT_DEF_CHARACTER);
 			Trait_Ally = new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true);
 
+			if (_eventProbability < 0) _eventProbability = Settings.minimumProbability;
 			Msg("Reunion Event Probability: " + _eventProbability);
 		}
 
@@ -386,6 +387,7 @@ namespace Kyrun
 				!pawn.Destroyed && // ignore pawns destroyed for whatever reason
 				!KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
 				!PawnsFinder.AllCaravansAndTravelingTransportPods_Alive.Contains(pawn) && // ignore caravan/pods
+				(pawn.ParentHolder == null || !(pawn.ParentHolder is CompTransporter)) && // ignore pawns in shuttle
 				Reunion.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
 			{
 				if (PawnComponentsUtility.HasSpawnedComponents(pawn))
