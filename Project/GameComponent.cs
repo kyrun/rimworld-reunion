@@ -162,8 +162,9 @@ namespace Kyrun.Reunion
 			listAvailable.Add(pawn);
 			Util.Msg(pawn.Name + " was lost by the player and made available for Reunion to spawn again.");
 
-			// now that there is at least one available pawn
-			TryScheduleNextEvent();
+			// If there is exactly one, it means that previously was paused due to no available pawns.
+			// So we schedule a new event.
+			if (listAvailable.Count == 1) TryScheduleNextEvent();
 		}
 
 
@@ -173,7 +174,7 @@ namespace Kyrun.Reunion
 			{
 				NextEventTick = -1;
 
-				Util.Msg("No available Reunion pawns, events will not fire from now on.");
+				Util.Msg("No available Reunion pawns, Reunion events will not fire from now on.");
 				return;
 			}
 
@@ -190,7 +191,7 @@ namespace Kyrun.Reunion
 				Random.Range(Settings.minDaysBetweenEvents * GenDate.TicksPerDay, Settings.maxDaysBetweenEvents * GenDate.TicksPerDay);
 
 #if TESTING
-			NextEventTick = Find.TickManager.TicksGame + 10000;
+			NextEventTick = Find.TickManager.TicksGame + 1000;
 			Util.Msg("Next event happening in " + NextEventTick);
 #endif
 		}
