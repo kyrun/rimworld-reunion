@@ -7,7 +7,7 @@
     <ProjectGuid>{8E264E23-3389-4DA6-836D-ABEB318EB1AE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Kyrun</RootNamespace>
+    <RootNamespace>Kyrun.Reunion</RootNamespace>
     <AssemblyName>Reunion</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -28,7 +28,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>C:\Games\Steam\steamapps\common\RimWorld\Mods\1985186461\1.1\Assemblies\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;TESTING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -64,8 +64,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ReunionMain.cs" />
+    <Compile Include="Defs.cs" />
+    <Compile Include="GameComponent.cs" />
+    <Compile Include="HarmonyPatches.cs" />
+    <Compile Include="IncidentAllyChased.cs" />
+    <Compile Include="IncidentAllyPrisonerRescue.cs" />
+    <Compile Include="IncidentAllyRefugeePod.cs" />
+    <Compile Include="IncidentAllyJoin.cs" />
+    <Compile Include="IncidentAllyDownedRefugee.cs" />
+    <Compile Include="Mod.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="Util.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
