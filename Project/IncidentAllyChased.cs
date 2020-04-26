@@ -107,8 +107,6 @@ namespace Kyrun.Reunion
 			{
 				GameComponent.ReturnToAvailable(pawn, GameComponent.ListAllySpawned, GameComponent.ListAllyAvailable);
 			}
-
-			GameComponent.TryScheduleNextEvent();
 		}
 
 

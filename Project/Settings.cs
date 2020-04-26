@@ -24,19 +24,19 @@ namespace Kyrun.Reunion
 		public Dictionary<Event, bool> EventAllow = new Dictionary<Event, bool>()
 		{
 			{ Event.WandererJoins, true },
+			{ Event.RefugeePodCrash, false },
 			{ Event.RefugeeChased, true },
 			{ Event.PrisonerRescue, true },
 			{ Event.DownedRefugee, true },
-			{ Event.RefugeePodCrash, false },
 		};
 
 		public Dictionary<Event, Func<bool>> EventAction = new Dictionary<Event, Func<bool>>()
 		{
 			{ Event.WandererJoins, IncidentAllyJoin.Do },
+			{ Event.RefugeePodCrash, IncidentAllyRefugeePod.Do },
 			{ Event.RefugeeChased, IncidentAllyChased.Do },
 			{ Event.PrisonerRescue, IncidentAllyPrisonerRescue.Do },
 			{ Event.DownedRefugee, IncidentAllyDownedRefugee.Do },
-			{ Event.RefugeePodCrash, IncidentAllyRefugeePod.Do },
 		};
 
 		// Save Mod Settings

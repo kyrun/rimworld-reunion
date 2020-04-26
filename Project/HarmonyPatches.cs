@@ -56,12 +56,6 @@ namespace Kyrun.Reunion
 		{
 			static bool Prefix(RimWorld.Planet.WorldPawns __instance, ref Pawn pawn, ref RimWorld.Planet.PawnDiscardDecideMode discardMode)
 			{
-#if TESTING
-				if (GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
-				{
-					Util.Msg("Passed to world: " + pawn.Name);
-				}
-#endif
 				if (Current.Game.Info.RealPlayTimeInteracting > 0 && // prevent this from firing when the game hasn't even started proper
 					!pawn.Destroyed && // ignore pawns destroyed for whatever reason
 					!KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
