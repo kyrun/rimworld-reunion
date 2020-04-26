@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
 <LanguageData>
+<!-- 1.0 -->
   <Reunion.MinimumProbability>Minimum Probability To Spawn (X/100)</Reunion.MinimumProbability>
   <Reunion.ProbabilityIncrementStep>Probability To Increment After Fail To Spawn (X/100)</Reunion.ProbabilityIncrementStep>
+<!-- End 1.0 -->
+  <Reunion.MinDaysBetweenEvents>Minimum Days Between Events</Reunion.MinDaysBetweenEvents>
+  <Reunion.MaxDaysBetweenEvents>Maximum Days Between Events</Reunion.MaxDaysBetweenEvents>
   <Reunion.AllowEventWandererJoins>Allow "Wanderer Joins" Event</Reunion.AllowEventWandererJoins>
+  <Reunion.AllowEventRefugeePodCrash>Allow "Refugee Pod Crash" Event</Reunion.AllowEventRefugeePodCrash>
   <Reunion.AllowEventRefugeeChased>Allow "Refugee Chased" Event</Reunion.AllowEventRefugeeChased>
   <Reunion.AllowEventPrisonerRescue>Allow "Prisoner Rescue" Event</Reunion.AllowEventPrisonerRescue>
   <Reunion.AllowEventDownedRefugee>Allow "Downed Refugee" Event</Reunion.AllowEventDownedRefugee>
-  <Reunion.AllowEventRefugeePodCrash>Allow "Refugee Pod Crash" Event</Reunion.AllowEventRefugeePodCrash>
 </LanguageData>
