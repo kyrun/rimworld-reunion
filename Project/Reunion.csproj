@@ -28,7 +28,7 @@
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>C:\Games\Steam\steamapps\common\RimWorld\Mods\1985186461\1.1\Assemblies\</OutputPath>
-    <DefineConstants>TRACE;TESTING</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>

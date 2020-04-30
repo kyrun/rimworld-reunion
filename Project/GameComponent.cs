@@ -24,7 +24,6 @@ namespace Kyrun.Reunion
 		// Save key
 		const string SAVE_NEXT_EVENT_TICK = "Reunion_NextEventTick";
 		const string SAVE_KEY_LIST_ALLY_SPAWNED = "Reunion_AllySpawned";
-		const string SAVE_KEY_LIST_ALLY_TEMP = "Reunion_AllyTemp";
 		const string SAVE_KEY_LIST_ALLY_AVAILABLE = "Reunion_AllyAvailable";
 
 		public static Settings Settings { get; private set; }
@@ -67,6 +66,9 @@ namespace Kyrun.Reunion
 		{
 			if (ListAllyAvailable == null) ListAllyAvailable = new List<Pawn>();
 			if (ListAllySpawned == null) ListAllySpawned = new List<string>();
+			var diff = NextEventTick - Find.TickManager.TicksGame;
+			if (NextEventTick <= 0) Util.Msg("No events scheduled");
+			else Util.Msg("Next event in " + ((float)diff/GenDate.TicksPerDay).ToString("0.00") + " days");
 		}
 
 
@@ -219,16 +221,18 @@ namespace Kyrun.Reunion
 			if (PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction.Count <= 1)
 			{
 				if (Settings.EventAllow[Settings.Event.WandererJoins]) listAllowedEvents.Add(Settings.Event.WandererJoins);
-				if (Settings.EventAllow[Settings.Event.RefugeeChased]) listAllowedEvents.Add(Settings.Event.RefugeeChased);
 				if (Settings.EventAllow[Settings.Event.RefugeePodCrash]) listAllowedEvents.Add(Settings.Event.RefugeePodCrash);
 			}
 
-			// add the rest of the allowed events
-			foreach (Settings.Event eventType in Enum.GetValues(typeof(Settings.Event)))
+			// add the rest of the allowed events if more than 1 Colonist
+			if (PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction.Count > 1)
 			{
-				if (Settings.EventAllow[eventType] && !listAllowedEvents.Contains(eventType))
+				foreach (Settings.Event eventType in Enum.GetValues(typeof(Settings.Event)))
 				{
-					listAllowedEvents.Add(eventType);
+					if (Settings.EventAllow[eventType] && !listAllowedEvents.Contains(eventType))
+					{
+						listAllowedEvents.Add(eventType);
+					}
 				}
 			}
 

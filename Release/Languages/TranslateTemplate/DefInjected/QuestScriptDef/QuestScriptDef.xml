@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<!-- Reunion_AllyJoinerWalkIn -->
+	<Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
+		<li>rewardDescription->a [joiner_age]-year-old [joiner_title] named [joiner_nameDef] will arrive and join you. [joiner_relationInfo]</li>
+	</Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
+	
+	<!-- Reunion_AllyChased -->
+	<Reunion_AllyChased.questDescriptionRules.rulesStrings>
+		<li>questDescription->A [joiner_age]-year-old [joiner_title] named [joiner_nameDef] is calling from nearby. [joiner_pronoun] is being chased by [enemyFaction_pawnsPlural] from [enemyFaction_name]!\n\n[joiner_pronoun] begs for safety and offers to join you at [map_definite].[joiner_relationInfo]\n\nIf you accept, you'll have to fight off the [enemyFaction_pawnsPluralDef] on [joiner_possessive] tail. The group of [enemyFaction_pawnsPlural] is composed of: \n\n[raid/raidPawnKinds]</li>
+	</Reunion_AllyChased.questDescriptionRules.rulesStrings>
+	<Reunion_AllyChased.questNameRules.rulesStrings>
+		<li>questName->Reunion: [runnerIndef]</li>
+		<li>runnerIndef->[joiner_nameIndef]</li>
+	</Reunion_AllyChased.questNameRules.rulesStrings>
+	<Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterLabel.value.slateRef>{BASELABEL} chasing [../joiner_nameDef]</Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterLabel.value.slateRef>
+	<Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterText.value.slateRef>{BASETEXT}\n              \nThe [enemyFaction_pawnsPlural] have come to get [../joiner_nameDef].</Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterText.value.slateRef>
+
+	<!-- Reunion_DownedRefugee -->
+	<Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
+		<li>questDescription->[refugee_nameDef] contacts you and requests help. [refugee_pronoun] is wounded and unable to move.\n\n[refugee_nameDef] is a [refugee_age]-year-old [refugee_title]. [refugee_pronoun] promises to join you if you rescue [refugee_objective].\n\n[refugee_nameDef] says that [allSitePartsDescriptionsExceptFirst][pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo(priority=1)->[refugee_pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo-></li>
+	</Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
+	<Reunion_DownedRefugee.questNameRules.rulesStrings>
+		<li>questName->Reunion: [refugee_nameDef]</li>
+	</Reunion_DownedRefugee.questNameRules.rulesStrings>
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>Quest expired: [resolvedQuestName]'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>[refugee_nameDef]'s signal has been lost, and [refugee_pronoun] can no longer be rescued for now. The quest [resolvedQuestName] has expired.'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>
+
+	<!-- Reunion_PrisonerRescue -->	
+	<Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
+		<li>questDescription->A prisoner being held by [siteFaction_name] has managed to steal a radio and call you!\n\n[prisoner_nameDef] is being held at a camp near [map_definite][underArmedGuard]. Rescue [prisoner_objective], and [prisoner_pronoun] will join your colony. [prisoner_pronoun] is a [prisoner_age]-year-old [prisoner_title]. [prisoner_pronoun] says that [allSitePartsDescriptionsExceptFirst][formerColonistInfo][prisonerFullRelationInfo]</li>
+		<li>formerColonistInfo(priority=1)->\n\n[prisoner_formerlyColonistInfo]</li>
+		<li>formerColonistInfo-></li>
+		<li>underArmedGuard(allowViolentQuests==true,priority=1)-> under armed guard</li>
+		<li>underArmedGuard-></li>
+	</Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
+	<Reunion_PrisonerRescue.questNameRules.rulesStrings>
+		<li>questName->Reunion: [prisoner_nameDef]</li>
+	</Reunion_PrisonerRescue.questNameRules.rulesStrings>
+	
+</LanguageData>
