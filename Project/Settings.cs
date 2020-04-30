@@ -17,7 +17,7 @@ namespace Kyrun.Reunion
 			DownedRefugee,
 		};
 
-		public int minDaysBetweenEvents = 1;
+		public int minDaysBetweenEvents = GenDate.DaysPerQuadrum/2;
 		public int maxDaysBetweenEvents = GenDate.DaysPerQuadrum;
 
 		// Toggle events

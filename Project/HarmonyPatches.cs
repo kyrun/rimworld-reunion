@@ -130,6 +130,7 @@ namespace Kyrun.Reunion
 							GameComponent.ListAllyAvailable.Add(p);
 							Find.WorldPawns.RemovePawn(p);
 							Util.Msg(p.Name + " has been removed from the World and added to the Ally list.");
+							if (GameComponent.ListAllyAvailable.Count == 1) GameComponent.TryScheduleNextEvent();
 						}
 					};
 

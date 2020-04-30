@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<!-- Reunion_AllyJoin -->
+	<Reunion_AllyJoin.label>ally join</Reunion_AllyJoin.label>
+	<Reunion_AllyJoin.letterLabel>Reunion: {PAWN_nameDef}</Reunion_AllyJoin.letterLabel>
+	<Reunion_AllyJoin.letterText>A {PAWN_title} named {PAWN_nameDef} has arrived and is joining the colony.</Reunion_AllyJoin.letterText>
+	
+	<!-- Reunion_AllyRefugeePod -->
+	<Reunion_AllyRefugeePod.label>ally refugee pod</Reunion_AllyRefugeePod.label>
+	<Reunion_AllyRefugeePod.letterLabel>Reunion: {PAWN_nameDef}</Reunion_AllyRefugeePod.letterLabel>
+	<Reunion_AllyRefugeePod.letterText>A {PAWN_title} named {PAWN_nameDef} has crashed nearby in a transport pod.</Reunion_AllyRefugeePod.letterText>
+</LanguageData>

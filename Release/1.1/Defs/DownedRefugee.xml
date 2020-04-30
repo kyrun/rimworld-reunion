@@ -4,7 +4,7 @@
   <SitePartDef>
     <defName>Reunion_DownedRefugee</defName>
     <label>incapacitated refugee</label>
-    <description>A stranded, incapacitated reunion refugee begging for help.</description>
+    <description>A stranded, incapacitated refugee begging for help.</description>
     <workerClass>Kyrun.Reunion.SitePartWorker_DownedRefugee</workerClass>
     <siteTexture>World/WorldObjects/Sites/GenericSite</siteTexture>
     <expandingIconTexture>World/WorldObjects/Expanding/Sites/DownedRefugee</expandingIconTexture>

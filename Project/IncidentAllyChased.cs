@@ -107,13 +107,33 @@ namespace Kyrun.Reunion
 			{
 				GameComponent.ReturnToAvailable(pawn, GameComponent.ListAllySpawned, GameComponent.ListAllyAvailable);
 			}
+
+			if (quest.State == QuestState.EndedOfferExpired) saveByReference = true;
+			GameComponent.TryScheduleNextEvent();
 		}
 
 
 		public override void ExposeData()
 		{
 			Scribe_Values.Look<string>(ref this.inSignal, "inSignal", null, false);
-			Scribe_Collections.Look<Pawn>(ref this.pawns, "pawns", LookMode.Deep, Array.Empty<object>()); // only this line changed
+
+			if (Scribe.mode == LoadSaveMode.Saving)
+			{
+				foreach (var pawn in pawns)
+				{
+					if (pawn.Faction == Faction.OfPlayer) // if any pawn has already joined, that means it has spawned
+					{
+						saveByReference = true;
+						break;
+					}
+				}
+			}
+
+			Scribe_Values.Look<bool>(ref this.saveByReference, "saveByReference", saveByReference, true);
+
+			var lookModeForPawn = saveByReference ? LookMode.Reference : LookMode.Deep;
+			Scribe_Collections.Look<Pawn>(ref this.pawns, "pawns", lookModeForPawn, Array.Empty<object>());
+
 			Scribe_Defs.Look<PawnsArrivalModeDef>(ref this.arrivalMode, "arrivalMode");
 			Scribe_References.Look<MapParent>(ref this.mapParent, "mapParent", false);
 			Scribe_Values.Look<IntVec3>(ref this.spawnNear, "spawnNear", default(IntVec3), false);
@@ -127,5 +147,7 @@ namespace Kyrun.Reunion
 				this.pawns.RemoveAll((Pawn x) => x == null);
 			}
 		}
+
+		public bool saveByReference;
 	}
 }
