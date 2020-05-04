@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<!-- Reunion_AllyJoinerWalkIn -->
+	<Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
+		<li>rewardDescription->Um(a) [joiner_title] de [joiner_age] anos de idade, chamado(a) [joiner_nameDef] vai chegar e se juntar a você. [joiner_relationInfo]</li>
+	</Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
+	
+	<!-- Reunion_AllyChased -->
+	<Reunion_AllyChased.questDescriptionRules.rulesStrings>
+		<li>questDescription->Um(a) [joiner_title] de [joiner_age] anos de idade, chamado(a) [joiner_nameDef] está chamando por perto. [joiner_pronoun] está sendo perseguido(a) por [enemyFaction_pawnsPlural] de [enemyFaction_name]!\n\n[joiner_pronoun] implora por segurança e se oferece para se juntar a você em [map_definite].[joiner_relationInfo]\n\nSe você aceitar, terá que lutar contra os [enemyFaction_pawnsPluralDef] que estão perseguindo [joiner_pronoun]. O grupo dos [enemyFaction_pawnsPlural] é composto por: \n\n[raid/raidPawnKinds]</li>
+	</Reunion_AllyChased.questDescriptionRules.rulesStrings>
+	<Reunion_AllyChased.questNameRules.rulesStrings>
+		<li>questName->Reencontro: [runnerIndef]</li>
+		<li>runnerIndef->[joiner_nameIndef]</li>
+	</Reunion_AllyChased.questNameRules.rulesStrings>
+	<Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterLabel.value.slateRef>{BASELABEL} perseguindo [../joiner_nameDef]</Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterLabel.value.slateRef>
+	<Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterText.value.slateRef>{BASETEXT}\n              \nThe [enemyFaction_pawnsPlural] vieram pegar [../joiner_nameDef].</Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterText.value.slateRef>
+
+	<!-- Reunion_DownedRefugee -->
+	<Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
+		<li>questDescription->[refugee_nameDef] entra em contato com você e solicita ajuda. [refugee_pronoun] está ferido(a) e incapaz de se mover.\n\n[refugee_nameDef] é um(a) [refugee_title] de [refugee_age] anos de idade. [refugee_pronoun] promete se juntar a você se você o(a) resgatar [refugee_objective].\n\n[refugee_nameDef] diz que [allSitePartsDescriptionsExceptFirst][pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo(priority=1)->[refugee_pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo-></li>
+	</Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
+	<Reunion_DownedRefugee.questNameRules.rulesStrings>
+		<li>questName->Reencontro: [refugee_nameDef]</li>
+	</Reunion_DownedRefugee.questNameRules.rulesStrings>
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>A missão expirou: [resolvedQuestName]'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>O sinal de [refugee_nameDef] foi perdido, e [refugee_pronoun] não pode mais ser resgatado(a). A missão [resolvedQuestName] expirou.</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>
+
+	<!-- Reunion_PrisonerRescue -->	
+	<Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
+		<li>questDescription->Um prisioneiro mantido por [siteFaction_name] conseguiu roubar um rádio e ligar para você!\n\n[prisoner_nameDef] está preso(a) em um acampamento perto de [map_definite][underArmedGuard]. Resgate [prisoner_pronoun], e [prisoner_pronoun] irá se juntar a sua colônia. [prisoner_pronoun] é um(a) [prisoner_title] de [prisoner_age] anos de idade. [prisoner_pronoun] diz que [allSitePartsDescriptionsExceptFirst][formerColonistInfo][prisonerFullRelationInfo]</li>
+		<li>formerColonistInfo(priority=1)->\n\n[prisoner_formerlyColonistInfo]</li>
+		<li>formerColonistInfo-></li>
+		<li>underArmedGuard(allowViolentQuests==true,priority=1)-> sob guarda armada</li>
+		<li>underArmedGuard-></li>
+	</Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
+	<Reunion_PrisonerRescue.questNameRules.rulesStrings>
+		<li>questName->Reencontro: [prisoner_nameDef]</li>
+	</Reunion_PrisonerRescue.questNameRules.rulesStrings>
+	
+</LanguageData>
