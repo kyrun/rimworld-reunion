@@ -28,6 +28,7 @@ namespace Kyrun.Reunion
 
 			// Replaces PrisonerWillingToJoinQuestUtility.GeneratePrisoner
 			Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+			pawn.guest.SetGuestStatus(part.site.Faction, true);
 
 			part.things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
 			part.things.TryAdd(pawn, true);
