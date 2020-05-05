@@ -7,7 +7,7 @@ namespace Kyrun.Reunion
 	class Mod : Verse.Mod
 	{
 		const int INPUT_MIN_DAYS_BTWN_EVENTS = 0;
-		const int INPUT_MAX_DAYS_BTWN_EVENTS = GenDate.DaysPerYear;
+		const int INPUT_MAX_DAYS_BTWN_EVENTS = 5 * GenDate.DaysPerYear;
 
 		Settings _settings;
 
