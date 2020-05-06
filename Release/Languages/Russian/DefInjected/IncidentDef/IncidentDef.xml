@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<!-- Reunion_AllyJoin -->
+	<Reunion_AllyJoin.label>союзник присоединяется</Reunion_AllyJoin.label>
+	<Reunion_AllyJoin.letterLabel>Воссоединение: {PAWN_nameDef}</Reunion_AllyJoin.letterLabel>
+	<Reunion_AllyJoin.letterText>{PAWN_title} по имени {PAWN_nameDef} присоединяется к вашему поселению.</Reunion_AllyJoin.letterText>
+	
+	<!-- Reunion_AllyRefugeePod -->
+	<Reunion_AllyRefugeePod.label>капсула с союзным беженцем</Reunion_AllyRefugeePod.label>
+	<Reunion_AllyRefugeePod.letterLabel>Воссоединение: {PAWN_nameDef}</Reunion_AllyRefugeePod.letterLabel>
+	<Reunion_AllyRefugeePod.letterText>{PAWN_title} по имени {PAWN_nameDef} упал неподалёку в транспортной капсуле.</Reunion_AllyRefugeePod.letterText>
+</LanguageData>
