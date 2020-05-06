@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+	<!-- Reunion_DownedRefugee -->
+	<Reunion_DownedRefugee.label>раненный беженец</Reunion_DownedRefugee.label>
+	<Reunion_DownedRefugee.description>Потерянный, обездвиженный беженец, просящий помощи.</Reunion_DownedRefugee.description>
+
+	<!-- Reunion_PrisonerRescue -->
+	<Reunion_PrisonerRescue.label>лагерь с пленным</Reunion_PrisonerRescue.label>
+	<Reunion_PrisonerRescue.description>Пленные, удерживаемые врагами. Освободите их, и они присоединятся к вам.</Reunion_PrisonerRescue.description>
+
+</LanguageData>
