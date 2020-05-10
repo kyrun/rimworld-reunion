@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+	<ReunionCharacter.degreeDatas.Reunion_Ally.label>(Воссоединение) Союзник</ReunionCharacter.degreeDatas.Reunion_Ally.label>
+	<ReunionCharacter.degreeDatas.Reunion_Ally.description>[PAWN_nameDef] - союзник, который однажды присоеденится к вашей фракции.</ReunionCharacter.degreeDatas.Reunion_Ally.description>
+
+</LanguageData>

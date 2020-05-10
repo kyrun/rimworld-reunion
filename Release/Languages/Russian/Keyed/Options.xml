@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<LanguageData>
+<!-- 1.0 -->
+  <Reunion.MinimumProbability>Минимальная вероятность спавна (X/100)</Reunion.MinimumProbability>
+  <Reunion.ProbabilityIncrementStep>Увеличение вероятности спавна при неудаче (X/100)</Reunion.ProbabilityIncrementStep>
+<!-- End 1.0 -->
+  <Reunion.MinDaysBetweenEvents>Минимум дней между событиями</Reunion.MinDaysBetweenEvents>
+  <Reunion.MaxDaysBetweenEvents>Максимум дней между событиями</Reunion.MaxDaysBetweenEvents>
+  <Reunion.AllowEventWandererJoins>Разрешить событие "Пополнение"</Reunion.AllowEventWandererJoins>
+  <Reunion.AllowEventRefugeePodCrash>Разрешить событие "Крушение капсулы"</Reunion.AllowEventRefugeePodCrash>
+  <Reunion.AllowEventRefugeeChased>Разрешить событие "Преследуемый беженец"</Reunion.AllowEventRefugeeChased>
+  <Reunion.AllowEventPrisonerRescue>Разрешить событие "Спасение пленного"</Reunion.AllowEventPrisonerRescue>
+  <Reunion.AllowEventDownedRefugee>Разрешить событие "Раненный беженец"</Reunion.AllowEventDownedRefugee>
+</LanguageData>
