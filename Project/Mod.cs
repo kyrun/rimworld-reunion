@@ -45,7 +45,7 @@ namespace Kyrun.Reunion
 			if (Current.Game != null && Current.Game.Info.RealPlayTimeInteracting > 0 &&
 				(prevMin != _settings.minDaysBetweenEvents || prevMax != _settings.maxDaysBetweenEvents))
 			{
-				GameComponent.TryScheduleNextEvent(true);
+				GameComponent.TryScheduleNextEvent();
 			}
 
 			listingStandard.Gap(GAP_HEIGHT);

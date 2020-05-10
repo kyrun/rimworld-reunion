@@ -29,6 +29,9 @@ namespace Kyrun.Reunion
 
 			// Replaces DownedRefugeeQuestUtility.GenerateRefugee
 			Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+
+			Util.DressPawnIfCold(pawn, part.site.Tile);
+
 			HealthUtility.DamageUntilDowned(pawn, false);
 			HealthUtility.DamageLegsUntilIncapableOfMoving(pawn, false);
 
@@ -55,6 +58,18 @@ namespace Kyrun.Reunion
 				outExtraDescriptionRules.Add(new Rule_String("pawnInvolvedInQuestInfo", taggedString));
 			}
 			outExtraDescriptionRules.AddRange(GrammarUtility.RulesForPawn("refugee", pawn, outExtraDescriptionConstants, true, true));
+		}
+
+		public override void PostMapGenerate(Map map)
+		{
+			base.PostMapGenerate(map);
+			GameComponent.FlagNextEventReadyForScheduling();
+		}
+
+		public override void PostDestroy(SitePart sitePart)
+		{
+			base.PostDestroy(sitePart);
+			Util.OnPostDestroyReschedule(sitePart);
 		}
 	}
 }

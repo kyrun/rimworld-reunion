@@ -103,13 +103,14 @@ namespace Kyrun.Reunion
 				return pawn.Faction != Faction.OfPlayer && GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID());
 			});
 
+			GameComponent.FlagNextEventReadyForScheduling();
 			foreach (var pawn in listToReturn)
 			{
 				GameComponent.ReturnToAvailable(pawn, GameComponent.ListAllySpawned, GameComponent.ListAllyAvailable);
 			}
 
 			if (quest.State == QuestState.EndedOfferExpired) saveByReference = true;
-			GameComponent.TryScheduleNextEvent();
+			else GameComponent.TryScheduleNextEvent(true);
 		}
 
 

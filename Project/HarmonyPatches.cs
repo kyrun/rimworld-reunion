@@ -17,7 +17,6 @@ namespace Kyrun.Reunion
 				GameComponent.PreInit();
 				GameComponent.InitOnNewGame();
 				GameComponent.PostInit();
-				GameComponent.TryScheduleNextEvent();
 			}
 		}
 
@@ -41,7 +40,7 @@ namespace Kyrun.Reunion
 		{
 			static void Postfix(TickManager __instance)
 			{
-				if (GameComponent.NextEventTick > 0 && __instance.TicksGame == GameComponent.NextEventTick)
+				if (GameComponent.NextEventTick > 0 && __instance.TicksGame >= GameComponent.NextEventTick)
 				{
 					GameComponent.DecideAndDoEvent();
 				}
@@ -84,7 +83,7 @@ namespace Kyrun.Reunion
 			{
 				if (GameComponent.ListAllySpawned.Contains(recruitee.GetUniqueLoadID()))
 				{
-					GameComponent.TryScheduleNextEvent();
+					GameComponent.TryScheduleNextEvent(true);
 				}
 			}
 		}
@@ -114,8 +113,19 @@ namespace Kyrun.Reunion
 			const string CATEGORY = "Mod - Reunion (by Kyrun)";
 			static void Postfix(Dialog_DebugActionsMenu __instance, ref List<Dialog_DebugActionsMenu.DebugActionOption> ___debugActions)
 			{
-				// *** Add Ally Trait ***
+				// *** Force Start Reunion Event ***
 				var debugAddAlly = new Dialog_DebugActionsMenu.DebugActionOption();
+				debugAddAlly.actionType = DebugActionType.Action;
+				debugAddAlly.label = "Force Start Reunion Event";
+				debugAddAlly.category = CATEGORY;
+				debugAddAlly.action = delegate
+				{
+					GameComponent.DecideAndDoEvent();
+				};
+				___debugActions.Add(debugAddAlly); // add to main list
+
+				// *** Make world pawn "Ally" ***
+				debugAddAlly = new Dialog_DebugActionsMenu.DebugActionOption();
 				debugAddAlly.actionType = DebugActionType.Action;
 				debugAddAlly.label = "Make world pawn \"Ally\"...";
 				debugAddAlly.category = CATEGORY;
@@ -130,7 +140,7 @@ namespace Kyrun.Reunion
 							GameComponent.ListAllyAvailable.Add(p);
 							Find.WorldPawns.RemovePawn(p);
 							Util.Msg(p.Name + " has been removed from the World and added to the Ally list.");
-							if (GameComponent.ListAllyAvailable.Count == 1) GameComponent.TryScheduleNextEvent();
+							if (GameComponent.ListAllyAvailable.Count == 1) GameComponent.TryScheduleNextEvent(true);
 						}
 					};
 
