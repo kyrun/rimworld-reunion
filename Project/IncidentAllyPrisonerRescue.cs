@@ -29,6 +29,7 @@ namespace Kyrun.Reunion
 			// Replaces PrisonerWillingToJoinQuestUtility.GeneratePrisoner
 			Pawn pawn = GameComponent.GetRandomAllyForSpawning();
 			pawn.guest.SetGuestStatus(part.site.Faction, true);
+			Util.DressPawnIfCold(pawn, part.site.Tile);
 
 			part.things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
 			part.things.TryAdd(pawn, true);
@@ -45,6 +46,18 @@ namespace Kyrun.Reunion
 				output = "";
 			}
 			outExtraDescriptionRules.Add(new Rule_String("prisonerFullRelationInfo", output));
+		}
+
+		public override void PostMapGenerate(Map map)
+		{
+			base.PostMapGenerate(map);
+			GameComponent.FlagNextEventReadyForScheduling();
+		}
+
+		public override void PostDestroy(SitePart sitePart)
+		{
+			base.PostDestroy(sitePart);
+			Util.OnPostDestroyReschedule(sitePart);
 		}
 	}
 }

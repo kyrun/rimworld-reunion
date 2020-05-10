@@ -12,7 +12,7 @@ namespace Kyrun.Reunion
 		public static List<string> ListAllySpawned = new List<string>();
 
 		// Variables
-		public static int NextEventTick = -1;
+		public static int NextEventTick = 0;
 
 		// Trait-related
 		public const string TRAIT_DEF_CHARACTER = "ReunionCharacter";
@@ -68,7 +68,7 @@ namespace Kyrun.Reunion
 			if (ListAllySpawned == null) ListAllySpawned = new List<string>();
 			var diff = NextEventTick - Find.TickManager.TicksGame;
 			if (NextEventTick <= 0) Util.Msg("No events scheduled");
-			else Util.Msg("Next event in " + ((float)diff/GenDate.TicksPerDay).ToString("0.00") + " days");
+			else Util.PrintNextEventTimeRemaining();
 		}
 
 
@@ -99,9 +99,9 @@ namespace Kyrun.Reunion
 				Find.WorldPawns.RemovePawn(pawn);
 			}, TRAIT_ALLY);
 
-#if TESTING
-			Util.PrintAllyList();
-#endif
+			if (Prefs.DevMode) Util.PrintAllyList();
+
+			TryScheduleNextEvent();
 		}
 
 
@@ -164,9 +164,13 @@ namespace Kyrun.Reunion
 			listAvailable.Add(pawn);
 			Util.Msg(pawn.Name + " was lost by the player and made available for Reunion to spawn again.");
 
-			// If there is exactly one, it means that previously was paused due to no available pawns.
-			// So we schedule a new event.
-			if (listAvailable.Count == 1) TryScheduleNextEvent();
+			TryScheduleNextEvent();
+		}
+
+
+		public static void FlagNextEventReadyForScheduling()
+		{
+			NextEventTick = 0;
 		}
 
 
@@ -174,28 +178,40 @@ namespace Kyrun.Reunion
 		{
 			if (ListAllyAvailable.Count == 0)
 			{
-				NextEventTick = -1;
-
 				Util.Msg("No available Reunion pawns, Reunion events will not fire from now on.");
+				return;
+			}
+
+			if (!forceReschedule && NextEventTick == -1)
+			{
+				// another event is currently happening
+				if (Prefs.DevMode)
+				{
+					Util.Msg("Tried to schedule an event but is in the middle of an event.");
+				}
+
 				return;
 			}
 
 			if (!forceReschedule && NextEventTick > Find.TickManager.TicksGame)
 			{
 				// another event is already scheduled
-#if TESTING
-				Util.Warn("Tried to schedule an event but another event has already been scheduled.");
-#endif
+				if (Prefs.DevMode)
+				{
+					Util.Msg("Tried to schedule an event but another event has already been scheduled.");
+				}
 				return;
 			}
 
-			NextEventTick = Find.TickManager.TicksGame +
-				Random.Range(Settings.minDaysBetweenEvents * GenDate.TicksPerDay, Settings.maxDaysBetweenEvents * GenDate.TicksPerDay);
+			var min = Settings.minDaysBetweenEvents * GenDate.TicksPerDay;
+			if (min == 0) min = 1; // limit it to at least 1 tick
+			var max = Settings.maxDaysBetweenEvents * GenDate.TicksPerDay;
+			NextEventTick = Find.TickManager.TicksGame + Random.Range(min, max);
 
 #if TESTING
 			NextEventTick = Find.TickManager.TicksGame + 1000;
-			Util.Msg("Next event happening in " + NextEventTick);
 #endif
+			Util.PrintNextEventTimeRemaining();
 		}
 
 
@@ -244,14 +260,14 @@ namespace Kyrun.Reunion
 			else
 			{
 				Util.Warn("No suitable event found, event timer restarted.");
-				TryScheduleNextEvent();
+				TryScheduleNextEvent(true);
 			}
 		}
 
 
 		public override void ExposeData()
 		{
-			Scribe_Values.Look(ref NextEventTick, SAVE_NEXT_EVENT_TICK, -1);
+			Scribe_Values.Look(ref NextEventTick, SAVE_NEXT_EVENT_TICK, 0);
 			Scribe_Collections.Look(ref ListAllyAvailable, SAVE_KEY_LIST_ALLY_AVAILABLE, LookMode.Deep);
 			Scribe_Collections.Look(ref ListAllySpawned, SAVE_KEY_LIST_ALLY_SPAWNED, LookMode.Value);
 

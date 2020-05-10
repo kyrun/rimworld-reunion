@@ -39,7 +39,7 @@ namespace Kyrun.Reunion
 			activeDropPodInfo.leaveSlag = true;
 			DropPodUtility.MakeDropPodAt(intVec, map, activeDropPodInfo);
 
-			GameComponent.TryScheduleNextEvent();
+			GameComponent.TryScheduleNextEvent(true);
 			return true;
 		}
 	}
