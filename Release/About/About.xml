@@ -8,8 +8,6 @@
 		<li>1.1</li>
 	</supportedVersions>
     <incompatibleWith>
-      <li>Vaniat127.IncidentHPersonHStat</li>
-      <li>newcolonist115.NoHPawnHLeftHBehind</li>
     </incompatibleWith>
 	<modDependencies>
     <li>
