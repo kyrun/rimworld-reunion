@@ -89,6 +89,7 @@ namespace Kyrun.Reunion
 		}
 
 
+		/* was previously used to send notifications
 		// Reverse patches to use original code
 		[HarmonyPatch]
 		static class ReversePatch
@@ -101,6 +102,7 @@ namespace Kyrun.Reunion
 				IncidentParms parms, LookTargets lookTargets, params NamedArgument[] textArgs)
 			{ }
 		}
+		*/
 
 
 		// DEBUG MENU ACTION --------------------------------------------------------------------------
