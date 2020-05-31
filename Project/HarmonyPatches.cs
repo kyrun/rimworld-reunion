@@ -60,6 +60,7 @@ namespace Kyrun.Reunion
 					!KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
 					!PawnsFinder.AllCaravansAndTravelingTransportPods_Alive.Contains(pawn) && // ignore caravan/pods
 					(pawn.ParentHolder == null || !(pawn.ParentHolder is CompTransporter)) && // ignore pawns in shuttle
+					pawn.Faction != Faction.OfPlayer &&
 					GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
 				{
 					if (PawnComponentsUtility.HasSpawnedComponents(pawn))
