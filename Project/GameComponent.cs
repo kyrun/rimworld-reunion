@@ -227,6 +227,7 @@ namespace Kyrun.Reunion
 			if (Current.Game.AnyPlayerHomeMap == null) // no map
 			{
 				Util.Msg("Player does not have any home map, event timer restarted.");
+				FlagNextEventReadyForScheduling();
 				TryScheduleNextEvent();
 				return;
 			}
@@ -241,7 +242,8 @@ namespace Kyrun.Reunion
 			}
 
 			// add the rest of the allowed events if more than 1 Colonist
-			if (PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction.Count > 1)
+			if (PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction.Count > 1 ||
+				listAllowedEvents.Count == 0) // or the player has turned off both the one-colonist events
 			{
 				foreach (Settings.Event eventType in Enum.GetValues(typeof(Settings.Event)))
 				{
