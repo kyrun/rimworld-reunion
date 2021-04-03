@@ -110,7 +110,7 @@ namespace Kyrun.Reunion
 			}
 
 			if (quest.State == QuestState.EndedOfferExpired) saveByReference = true;
-			else GameComponent.TryScheduleNextEvent(true);
+			else GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
 		}
 
 

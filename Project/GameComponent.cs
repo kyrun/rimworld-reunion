@@ -6,6 +6,14 @@ using Random = UnityEngine.Random;
 
 namespace Kyrun.Reunion
 {
+	public enum ScheduleMode
+	{
+		Normal,
+		Init, // suppress messages so it doesn't look like there's a problem
+		SettingsUpdated,
+		Forced
+	}
+
 	class GameComponent : Verse.GameComponent
 	{
 		public static List<Pawn> ListAllyAvailable = new List<Pawn>();
@@ -46,6 +54,7 @@ namespace Kyrun.Reunion
 		{
 			ListAllyAvailable.Clear();
 			ListAllySpawned.Clear();
+			NextEventTick = 0;
 #if TESTING
 			/* */
 			const int TOTAL = 5;
@@ -66,7 +75,7 @@ namespace Kyrun.Reunion
 		{
 			if (ListAllyAvailable == null) ListAllyAvailable = new List<Pawn>();
 			if (ListAllySpawned == null) ListAllySpawned = new List<string>();
-			var diff = NextEventTick - Find.TickManager.TicksGame;
+
 			if (NextEventTick <= 0) Util.Msg("No events scheduled");
 			else Util.PrintNextEventTimeRemaining();
 		}
@@ -101,7 +110,7 @@ namespace Kyrun.Reunion
 
 			if (Prefs.DevMode) Util.PrintAllyList();
 
-			TryScheduleNextEvent();
+			TryScheduleNextEvent(ScheduleMode.Init);
 		}
 
 
@@ -174,31 +183,34 @@ namespace Kyrun.Reunion
 		}
 
 
-		public static void TryScheduleNextEvent(bool forceReschedule = false)
+		public static void TryScheduleNextEvent(ScheduleMode mode = ScheduleMode.Normal)
 		{
 			if (ListAllyAvailable.Count == 0)
 			{
-				Util.Msg("No available Reunion pawns, Reunion events will not fire from now on.");
+				if (mode != ScheduleMode.Init) Util.Msg("No available Reunion pawns, Reunion events will not fire from now on.");
 				return;
 			}
 
-			if (!forceReschedule && NextEventTick == -1)
+			if (mode != ScheduleMode.Forced && // don't check if forced
+				NextEventTick == -1)
 			{
 				// another event is currently happening
 				if (Prefs.DevMode)
 				{
-					Util.Msg("Tried to schedule an event but is in the middle of an event.");
+					if (mode != ScheduleMode.Init) Util.Msg("Tried to schedule an event but is in the middle of an event.");
 				}
 
 				return;
 			}
 
-			if (!forceReschedule && NextEventTick > Find.TickManager.TicksGame)
+			if (mode != ScheduleMode.Forced && // don't check if forced
+				mode != ScheduleMode.SettingsUpdated && // only updating settings will force a reschedule
+				NextEventTick > Find.TickManager.TicksGame)
 			{
 				// another event is already scheduled
 				if (Prefs.DevMode)
 				{
-					Util.Msg("Tried to schedule an event but another event has already been scheduled.");
+					if (mode != ScheduleMode.Init) Util.Msg("Tried to schedule an event but another event has already been scheduled.");
 				}
 				return;
 			}
@@ -234,16 +246,14 @@ namespace Kyrun.Reunion
 
 			List<Settings.Event> listAllowedEvents = new List<Settings.Event>();
 
-			// special case where there's only one colonist
-			if (PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction.Count <= 1)
-			{
-				if (Settings.EventAllow[Settings.Event.WandererJoins]) listAllowedEvents.Add(Settings.Event.WandererJoins);
-				if (Settings.EventAllow[Settings.Event.RefugeePodCrash]) listAllowedEvents.Add(Settings.Event.RefugeePodCrash);
-			}
+			if (Settings.EventAllow[Settings.Event.WandererJoins]) listAllowedEvents.Add(Settings.Event.WandererJoins);
+			if (Settings.EventAllow[Settings.Event.RefugeePodCrash]) listAllowedEvents.Add(Settings.Event.RefugeePodCrash);
+			if (Settings.EventAllow[Settings.Event.RefugeeChased]) listAllowedEvents.Add(Settings.Event.RefugeeChased);
 
 			// add the rest of the allowed events if more than 1 Colonist
-			if (PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction.Count > 1 ||
-				listAllowedEvents.Count == 0) // or the player has turned off both the one-colonist events
+			if (Settings.enableHarderEventsWhenSolo || // if option for harder solo is turned on
+				listAllowedEvents.Count == 0 || // or the player has turned off both the one-colonist events
+				PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction.Count > 1)  // this is the actual condition
 			{
 				foreach (Settings.Event eventType in Enum.GetValues(typeof(Settings.Event)))
 				{
@@ -262,7 +272,7 @@ namespace Kyrun.Reunion
 			else
 			{
 				Util.Warn("No suitable event found, event timer restarted.");
-				TryScheduleNextEvent(true);
+				TryScheduleNextEvent(ScheduleMode.Forced);
 			}
 		}
 
