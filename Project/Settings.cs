@@ -19,6 +19,7 @@ namespace Kyrun.Reunion
 
 		public int minDaysBetweenEvents = GenDate.DaysPerQuadrum/2;
 		public int maxDaysBetweenEvents = GenDate.DaysPerQuadrum;
+		public bool enableHarderEventsWhenSolo = false;
 
 		// Toggle events
 		public Dictionary<Event, bool> EventAllow = new Dictionary<Event, bool>()
@@ -46,6 +47,7 @@ namespace Kyrun.Reunion
 
 			Scribe_Values.Look(ref minDaysBetweenEvents, "minDaysBetweenEvents", 1, true);
 			Scribe_Values.Look(ref maxDaysBetweenEvents, "maxDaysBetweenEvents", GenDate.DaysPerQuadrum, true);
+			Scribe_Values.Look(ref enableHarderEventsWhenSolo, "enableHarderEventsWhenSolo", false, true);
 
 			foreach (Event evtType in Enum.GetValues(typeof(Event)))
 			{

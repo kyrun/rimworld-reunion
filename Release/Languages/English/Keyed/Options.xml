@@ -12,4 +12,5 @@
   <Reunion.AllowEventRefugeeChased>Allow "Refugee Chased" Event</Reunion.AllowEventRefugeeChased>
   <Reunion.AllowEventPrisonerRescue>Allow "Prisoner Rescue" Event</Reunion.AllowEventPrisonerRescue>
   <Reunion.AllowEventDownedRefugee>Allow "Downed Refugee" Event</Reunion.AllowEventDownedRefugee>
+  <Reunion.EnableHarderSolo>Enable Off-Map Events When Single Pawn</Reunion.EnableHarderSolo>
 </LanguageData>

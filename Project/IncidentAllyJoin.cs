@@ -26,7 +26,7 @@ namespace Kyrun.Reunion
 
 			Find.LetterStack.ReceiveLetter(baseLetterLabel, baseLetterText, def.letterDef, new LookTargets(pawn));
 
-			GameComponent.TryScheduleNextEvent(true);
+			GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
 
 			return true;
 		}

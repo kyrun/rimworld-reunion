@@ -45,7 +45,7 @@ namespace Kyrun.Reunion
 			if (Current.Game != null && Current.Game.Info.RealPlayTimeInteracting > 0 &&
 				(prevMin != _settings.minDaysBetweenEvents || prevMax != _settings.maxDaysBetweenEvents))
 			{
-				GameComponent.TryScheduleNextEvent();
+				GameComponent.TryScheduleNextEvent(ScheduleMode.SettingsUpdated);
 			}
 
 			listingStandard.Gap(GAP_HEIGHT);
@@ -56,6 +56,10 @@ namespace Kyrun.Reunion
 				listingStandard.CheckboxLabeled(Settings.CreateTranslationKey(evtType).Translate(), ref allow);
 				_settings.EventAllow[evtType] = allow;
 			}
+
+			listingStandard.Gap(GAP_HEIGHT);
+
+			listingStandard.CheckboxLabeled("Reunion.EnableHarderSolo".Translate(), ref _settings.enableHarderEventsWhenSolo);
 
 			listingStandard.End();
 

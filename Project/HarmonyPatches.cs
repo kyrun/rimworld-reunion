@@ -67,6 +67,7 @@ namespace Kyrun.Reunion
 					{
 						PawnComponentsUtility.RemoveComponentsOnDespawned(pawn);
 					}
+					if (pawn.IsPrisoner) pawn.guest.SetGuestStatus(null, false);
 					GameComponent.ReturnToAvailable(pawn, GameComponent.ListAllySpawned, GameComponent.ListAllyAvailable);
 					return false;
 				}
@@ -84,7 +85,7 @@ namespace Kyrun.Reunion
 			{
 				if (GameComponent.ListAllySpawned.Contains(recruitee.GetUniqueLoadID()))
 				{
-					GameComponent.TryScheduleNextEvent(true);
+					GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
 				}
 			}
 		}
@@ -143,7 +144,7 @@ namespace Kyrun.Reunion
 							GameComponent.ListAllyAvailable.Add(p);
 							Find.WorldPawns.RemovePawn(p);
 							Util.Msg(p.Name + " has been removed from the World and added to the Ally list.");
-							if (GameComponent.ListAllyAvailable.Count == 1) GameComponent.TryScheduleNextEvent(true);
+							if (GameComponent.ListAllyAvailable.Count == 1) GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
 						}
 					};
 
