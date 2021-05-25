@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<!-- Reunion_AllyJoinerWalkIn -->
+	<Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
+		<li>rewardDescription->[joiner_age] ans [joiner_title] nommé [joiner_nameDef] se joindra à vous. [joiner_relationInfo]</li>
+	</Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
+	
+	<!-- Reunion_AllyChased -->
+	<Reunion_AllyChased.questDescriptionRules.rulesStrings>
+		<li>questDescription->[joiner_age] ans [joiner_title] nommé [joiner_nameDef] essaie de vous contacter. [joiner_pronoun] est poursuivi par [ennemiFaction_pawnsPlural] de [ennemiFaction_name]! \ n \ n [joiner_pronoun] demande une protection et peut vous rejoindre en retour. [joiner_nameDef] dit que dans son groupe:\n\n[raid/raidPawnKinds]</li>
+	</Reunion_AllyChased.questDescriptionRules.rulesStrings>
+	<Reunion_AllyChased.questNameRules.rulesStrings>
+		<li>questName->Réunion: [runnerIndef]</li>
+		<li>runnerIndef->[joiner_nameIndef]</li>
+	</Reunion_AllyChased.questNameRules.rulesStrings>
+	<Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterLabel.value.slateRef>{BASELABEL} poursuit [../joiner_nameDef]</Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterLabel.value.slateRef>
+	<Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterText.value.slateRef>{BASETEXT}\n              \n[enemyFaction_pawnsPlural] est venu pour [../joiner_nameDef].</Reunion_AllyChased.root.nodes.Delay-0.node.parms.customLetterText.value.slateRef>
+
+	<!-- Reunion_DownedRefugee -->
+	<Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
+		<li>questDescription->[refugee_nameDef] связывается с вами и просит помощи. [refugee_pronoun] vous contacte et vous demande de l'aide. [Refuge_pronoun] est gravement blessé et ne peut pas bouger. \n\n[refugee_nameDef] - [refugee_age] ans [refugee_title]. [refugee_pronoun] vous rejoindra si vous sauvez [refugee_objective].\n\n[refugee_nameDef] signale que: [allSitePartsDescriptionsExceptFirst][pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo(priority=1)->[refugee_pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo-></li>
+	</Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
+	<Reunion_DownedRefugee.questNameRules.rulesStrings>
+		<li>questName->Réunion: [refugee_nameDef]</li>
+	</Reunion_DownedRefugee.questNameRules.rulesStrings>
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>La quête a expiré [resolvedQuestName]'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>Le signal du réfugié [refugee_nameDef] a été perdu et  [refugee_pronoun] ne peut plus être sauvé. La quête a échoué: [resolvedQuestName].'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>
+
+	<!-- Reunion_PrisonerRescue -->	
+	<Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
+		<li>questDescription->Le prisonnier détenu par [siteFaction_name] vous a contacté!\n\n[prisoner_nameDef] est dans un camp près de [map_definite][underArmedGuard]. Sauvez [prisoner_objective], et [prisoner_pronoun] rejoindra votre colonie. [prisoner_pronoun] [prisoner_age] ans [prisoner_title]. [prisoner_pronoun] signale également que: [allSitePartsDescriptionsExceptFirst][formerColonistInfo][prisonerFullRelationInfo]</li>
+		<li>formerColonistInfo(priority=1)->\n\n[prisoner_formerlyColonistInfo]</li>
+		<li>formerColonistInfo-></li>
+		<li>underArmedGuard(allowViolentQuests==true,priority=1)-> Garde armé</li>
+		<li>underArmedGuard-></li>
+	</Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
+	<Reunion_PrisonerRescue.questNameRules.rulesStrings>
+		<li>questName->Réunion: [prisoner_nameDef]</li>
+	</Reunion_PrisonerRescue.questNameRules.rulesStrings>
+	
+</LanguageData>

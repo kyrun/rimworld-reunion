@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<LanguageData>
+<!-- 1.0 -->
+  <Reunion.MinimumProbability>Probabilité minimale d'apparaître (X/100)</Reunion.MinimumProbability>
+  <Reunion.ProbabilityIncrementStep>Probabilité d'augmenter après l'échec de l'apparition (X/100)</Reunion.ProbabilityIncrementStep>
+<!-- End 1.0 -->
+  <Reunion.MinDaysBetweenEvents>Nombre minimum de jours entre les événements</Reunion.MinDaysBetweenEvents>
+  <Reunion.MaxDaysBetweenEvents>Nombre maximum de jours entre les événements</Reunion.MaxDaysBetweenEvents>
+  <Reunion.AllowEventWandererJoins>Autoriser l'événement "Un réfugié se joint"</Reunion.AllowEventWandererJoins>
+  <Reunion.AllowEventRefugeePodCrash>Autoriser l'événement ''crash de nacelle de vaisseau''</Reunion.AllowEventRefugeePodCrash>
+  <Reunion.AllowEventRefugeeChased>Autoriser l'événement ''réfugié poursuivi''</Reunion.AllowEventRefugeeChased>
+  <Reunion.AllowEventPrisonerRescue>Autoriser l'événement ''sauvez le prisonnier''</Reunion.AllowEventPrisonerRescue>
+  <Reunion.AllowEventDownedRefugee>Autoriser l'événement ''réfugié abattu''</Reunion.AllowEventDownedRefugee>
+  <Reunion.EnableHarderSolo>Activer les événements hors carte avec un seul pion</Reunion.EnableHarderSolo>
+</LanguageData>
