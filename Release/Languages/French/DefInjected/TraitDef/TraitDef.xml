@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+	<ReunionCharacter.degreeDatas.Reunion_Ally.label>(Réunion) Allié</ReunionCharacter.degreeDatas.Reunion_Ally.label>
+	<ReunionCharacter.degreeDatas.Reunion_Ally.description>[PAWN_nameDef] - un allié qui rejoindra un jour votre faction.</ReunionCharacter.degreeDatas.Reunion_Ally.description>
+
+</LanguageData>
