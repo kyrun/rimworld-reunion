@@ -7,6 +7,7 @@
 		<li>1.0</li>
 		<li>1.1</li>
 		<li>1.2</li>
+		<li>1.3</li>
 	</supportedVersions>
     <incompatibleWith>
     </incompatibleWith>
@@ -17,12 +18,6 @@
         <downloadUrl>https://github.com/pardeike/HarmonyRimWorld/releases/latest</downloadUrl>
         <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
     </li>
-	<li>
-		<packageId>UnlimitedHugs.HugsLib</packageId>
-		<displayName>HugsLib</displayName>
-		<downloadUrl>https://github.com/UnlimitedHugs/RimworldHugsLib/releases/latest</downloadUrl>
-		<steamWorkshopUrl>steam://url/CommunityFilePage/818773962</steamWorkshopUrl>
-	</li>
 	</modDependencies>
-	<description>Use Prepare Carefully to add the trait "(Reunion) Ally" to a pawn in the World pool. Your chances of encountering this pawn in events that let them join you will greatly increase.</description>
+	<description>Use Prepare Carefully to add the trait "(Reunion) Ally" to a pawn in the World pool. The mod will ensure that you will encounter this pawn one way or another in the future.</description>
 </ModMetaData>

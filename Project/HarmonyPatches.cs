@@ -67,7 +67,7 @@ namespace Kyrun.Reunion
 					{
 						PawnComponentsUtility.RemoveComponentsOnDespawned(pawn);
 					}
-					if (pawn.IsPrisoner) pawn.guest.SetGuestStatus(null, false);
+					if (pawn.IsPrisoner) pawn.guest.SetGuestStatus(null, GuestStatus.Guest);
 					GameComponent.ReturnToAvailable(pawn, GameComponent.ListAllySpawned, GameComponent.ListAllyAvailable);
 					return false;
 				}
@@ -78,10 +78,11 @@ namespace Kyrun.Reunion
 
 		// On recruit a Reunion pawn, try to schedule next event
 		[HarmonyPatch(typeof(InteractionWorker_RecruitAttempt), "DoRecruit")]
-		[HarmonyPatch(new Type[] { typeof(Pawn), typeof(Pawn), typeof(float), typeof(bool) })]
+		[HarmonyPatch(new Type[] { typeof(Pawn), typeof(Pawn), typeof(bool) })]
 		internal static class InteractionWorker_RecruitAttempt_DoRecruit
 		{
-			static void Postfix(InteractionWorker_RecruitAttempt __instance, Pawn recruiter, Pawn recruitee, float recruitChance, bool useAudiovisualEffects)
+			static void Postfix(InteractionWorker_RecruitAttempt __instance,
+				Pawn recruiter, Pawn recruitee, bool useAudiovisualEffects)
 			{
 				if (GameComponent.ListAllySpawned.Contains(recruitee.GetUniqueLoadID()))
 				{
