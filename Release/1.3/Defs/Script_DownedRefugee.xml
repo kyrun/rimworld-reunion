@@ -40,6 +40,23 @@
         </li>
         <li Class="QuestNode_GetMap" />
 
+        <li Class="QuestNode_RandomNode">
+          <nodes>
+            <li Class="QuestNode_Set">
+              <name>askerIsNull</name>
+              <value>true</value>
+              <selectionWeight>0.2</selectionWeight>
+            </li>
+            <li Class="QuestNode_GetPawn">
+              <storeAs>asker</storeAs>
+              <mustBeFactionLeader>true</mustBeFactionLeader>
+              <mustBeNonHostileToPlayer>true</mustBeNonHostileToPlayer>
+              <hostileWeight>0.15</hostileWeight>
+              <selectionWeight>0.3</selectionWeight>
+            </li>
+          </nodes>
+        </li>
+
         <li Class="QuestNode_GetSiteTile">
           <storeAs>siteTile</storeAs>
           <preferCloserTiles>true</preferCloserTiles>
@@ -96,14 +113,20 @@
           <node Class="QuestNode_Sequence">
             <nodes>
               <li Class="QuestNode_Letter">
-                <label>Quest expired: [resolvedQuestName]</label>
-                <text>[refugee_nameDef]'s signal has been lost, and [refugee_pronoun] can no longer be rescued for now. The quest [resolvedQuestName] has expired.</text>
+                <label TKey="LetterLabelQuestExpired">Quest expired: [resolvedQuestName]</label>
+                <text TKey="LetterTextQuestExpired">[refugee_nameDef]'s signal has been lost, and [refugee_pronoun] can no longer be rescued. The quest [resolvedQuestName] has expired.</text>
               </li>
               <li Class="QuestNode_End">
                 <outcome>Fail</outcome>
               </li>
             </nodes>
           </node>
+        </li>
+
+        <li Class="QuestNode_AddPawnReward">
+          <pawn>$refugee</pawn>
+          <inSignalChoiceUsed>site.MapGenerated</inSignalChoiceUsed>
+          <rewardDetailsHidden>true</rewardDetailsHidden>
         </li>
 
         <li Class="QuestNode_NoWorldObject">

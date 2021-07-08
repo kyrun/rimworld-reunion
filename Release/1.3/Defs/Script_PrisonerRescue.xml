@@ -98,6 +98,12 @@
           </node>
         </li>
 
+        <li Class="QuestNode_AddPawnReward">
+          <pawn>$prisoner</pawn>
+          <inSignalChoiceUsed>site.MapGenerated</inSignalChoiceUsed>
+          <rewardDetailsHidden>true</rewardDetailsHidden>
+        </li>
+
         <li Class="QuestNode_NoWorldObject">
           <worldObject>$site</worldObject>
           <node Class="QuestNode_End" />

@@ -8,7 +8,7 @@
     <workerClass>Kyrun.Reunion.SitePartWorker_PrisonerRescue</workerClass>
     <siteTexture>World/WorldObjects/Sites/GenericSite</siteTexture>
     <expandingIconTexture>World/WorldObjects/Expanding/Sites/Prisoner</expandingIconTexture>
-    <forceExitAndRemoveMapCountdownDurationDays>5</forceExitAndRemoveMapCountdownDurationDays>
+    <forceExitAndRemoveMapCountdownDurationDays>6</forceExitAndRemoveMapCountdownDurationDays>
     <requiresFaction>true</requiresFaction>
     <!-- <increasesPopulation>true</increasesPopulation> -->
     <handlesWorldObjectTimeoutInspectString>true</handlesWorldObjectTimeoutInspectString>

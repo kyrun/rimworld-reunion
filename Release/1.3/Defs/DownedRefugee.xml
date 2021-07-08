@@ -8,7 +8,7 @@
     <workerClass>Kyrun.Reunion.SitePartWorker_DownedRefugee</workerClass>
     <siteTexture>World/WorldObjects/Sites/GenericSite</siteTexture>
     <expandingIconTexture>World/WorldObjects/Expanding/Sites/DownedRefugee</expandingIconTexture>
-    <forceExitAndRemoveMapCountdownDurationDays>15</forceExitAndRemoveMapCountdownDurationDays>
+    <forceExitAndRemoveMapCountdownDurationDays>16</forceExitAndRemoveMapCountdownDurationDays>
     <!-- <increasesPopulation>true</increasesPopulation> -->
     <handlesWorldObjectTimeoutInspectString>true</handlesWorldObjectTimeoutInspectString>
     <tags>
