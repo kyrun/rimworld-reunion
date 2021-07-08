@@ -53,6 +53,9 @@
     <rootMinPoints>0</rootMinPoints>
     <expireDaysRange>0.3</expireDaysRange>
     <!-- <rootIncreasesPopulation>true</rootIncreasesPopulation> -->
+    <defaultCharity>true</defaultCharity>
+    <successHistoryEvent MayRequire="Ludeon.RimWorld.Ideology">CharityFulfilled_ThreatReward_Joiner</successHistoryEvent>
+    <failedOrExpiredHistoryEvent MayRequire="Ludeon.RimWorld.Ideology">CharityRefused_ThreatReward_Joiner</failedOrExpiredHistoryEvent>
     <questNameRules>
       <rulesStrings>
         <li>questName->Reunion: [runnerIndef]</li>
@@ -83,6 +86,11 @@
           <storeAs>enemyFaction</storeAs>
         </li>
 
+         <!-- Charity on accept -->
+        <li Class="QuestNode_RecordHistoryEvent" MayRequire="Ludeon.RimWorld.Ideology">
+          <historyDef>CharityFulfilled_ThreatReward_Joiner</historyDef>
+        </li>
+
         <!-- Joiner arrives -->
         <li Class="QuestNode_SubScript">
           <def>Reunion_AllyChasedThreat</def>
@@ -105,8 +113,8 @@
               <points>$points</points>
               <enemyFaction>$enemyFaction</enemyFaction>
               <walkInSpot>$walkInSpot</walkInSpot>
-              <customLetterLabel>{BASELABEL} chasing [../joiner_nameDef]</customLetterLabel>
-              <customLetterText>{BASETEXT}
+              <customLetterLabel TKey="LetterLabelCashing">{BASELABEL} chasing [../joiner_nameDef]</customLetterLabel>
+              <customLetterText TKey="LetterTextCashing">{BASETEXT}
               \nThe [enemyFaction_pawnsPlural] have come to get [../joiner_nameDef].</customLetterText>
             </parms>
           </node>
