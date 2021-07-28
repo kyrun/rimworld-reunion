@@ -55,7 +55,7 @@ namespace Kyrun.Reunion
 				tile, false, false, false, false, true, false, 0f,
 				true, // "forceAddFreeWarmLayerIfNeeded": THIS IS THE MOST IMPORTANT VARIABLE
 				true, true, true, false, false, false, false, 0f, 0f, null, 0f, null, null, null, null,
-				new float?(0.0f), null, null, null, null, null, null, null));
+				new float?(0.0f), null, null, null, null, null, null, null, null, true, true, true));
 		}
 
 		public static void OnPostDestroyReschedule(SitePart sitePart)
