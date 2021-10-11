@@ -12,4 +12,5 @@
   <Reunion.AllowEventRefugeeChased>Разрешить событие "Преследуемый беженец"</Reunion.AllowEventRefugeeChased>
   <Reunion.AllowEventPrisonerRescue>Разрешить событие "Спасение пленного"</Reunion.AllowEventPrisonerRescue>
   <Reunion.AllowEventDownedRefugee>Разрешить событие "Раненный беженец"</Reunion.AllowEventDownedRefugee>
+  <Reunion.EnableHarderSolo>Разрешить события на глобальной карте при одном колонисте</Reunion.EnableHarderSolo>
 </LanguageData>
