@@ -2,12 +2,12 @@
 <LanguageData>
 	<!-- Reunion_AllyJoinerWalkIn -->
 	<Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
-		<li>rewardDescription->[joiner_age]-летний [joiner_title] по имени [joiner_nameDef] присоеденится к вам. [joiner_relationInfo]</li>
+		<li>rewardDescription->[joiner_title] в возрасте [joiner_age] лет по имени [joiner_nameDef] присоеденится к вам. [joiner_relationInfo]</li>
 	</Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
 	
 	<!-- Reunion_AllyChased -->
 	<Reunion_AllyChased.questDescriptionRules.rulesStrings>
-		<li>questDescription->[joiner_age]-летний [joiner_title] по имени [joiner_nameDef] пытается связаться с вами. [joiner_pronoun] преследуется [enemyFaction_pawnsPlural] из [enemyFaction_name]!\n\n[joiner_pronoun] просит о защите и взамен может присоеденится к вам.[joiner_relationInfo]\n\nЕсли вы согласитесь [joiner_possessive] принять, то вам придётся сражаться с [enemyFaction_pawnsPluralDef] которые [joiner_possessive] приследуют. [joiner_nameDef] сообщает, что в их группе:  \n\n[raid/raidPawnKinds]</li>
+		<li>questDescription->[joiner_title] в возрасте [joiner_age] лет по имени [joiner_nameDef] пытается связаться с вами. [joiner_possessive] преследуют [enemyFaction_pawnsPlural] из [enemyFaction_name]!\n\n[joiner_pronoun] просит о защите и взамен может присоедениться к вам.[joiner_relationInfo]\n\nЕсли вы согласитесь [joiner_possessive] принять, то вам придётся сражаться с группой которая [joiner_possessive] приследует. [joiner_nameDef] сообщает, что в этой группе:  \n\n[raid/raidPawnKinds]</li>
 	</Reunion_AllyChased.questDescriptionRules.rulesStrings>
 	<Reunion_AllyChased.questNameRules.rulesStrings>
 		<li>questName->Воссоединение: [runnerIndef]</li>
@@ -18,7 +18,7 @@
 
 	<!-- Reunion_DownedRefugee -->
 	<Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
-		<li>questDescription->[refugee_nameDef] связывается с вами и просит помощи. [refugee_pronoun] тяжело ранен и не может передвигаться.\n\n[refugee_nameDef] - [refugee_age]-летний [refugee_title]. [refugee_pronoun] присоеденится к вам если вы спасёте [refugee_objective].\n\nТакже [refugee_nameDef] сообщает, что: [allSitePartsDescriptionsExceptFirst][pawnInvolvedInQuestInfo]</li>
+		<li>questDescription->[refugee_nameDef] связывается с вами и просит о помощи. [refugee_pronoun] имеет тяжелые ранения и не может передвигаться.\n\n[refugee_nameDef] - [refugee_title], и [refugee_objective] [refugee_age] лет. [refugee_pronoun] присоеденится к вам если вы спасёте [refugee_possessive].\n\nТакже [refugee_nameDef] сообщает, что [allSitePartsDescriptionsExceptFirst][pawnInvolvedInQuestInfo]</li>
 		<li>pawnInvolvedInQuestInfo(priority=1)->[refugee_pawnInvolvedInQuestInfo]</li>
 		<li>pawnInvolvedInQuestInfo-></li>
 	</Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
@@ -26,11 +26,11 @@
 		<li>questName->Воссоединение: [refugee_nameDef]</li>
 	</Reunion_DownedRefugee.questNameRules.rulesStrings>
 	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>Срок задания истёк: [resolvedQuestName]'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>
-	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>Сигнал беженца по имени [refugee_nameDef] был потерян и в данный момент [refugee_pronoun] не может быть спасён. Задание провалено: [resolvedQuestName].'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>Сигнал беженца по имени [refugee_nameDef] был потерян и [refugee_pronoun] пока нельзя спасти. Задание провалено: [resolvedQuestName].'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>
 
 	<!-- Reunion_PrisonerRescue -->	
 	<Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
-		<li>questDescription->Пленный, удерживаемый [siteFaction_name] связался с вами!\n\n[prisoner_nameDef] находится в лагере неподалёку от [map_definite][underArmedGuard]. Спасите [prisoner_objective], и [prisoner_pronoun] присоеденится к вашей колонии. [prisoner_pronoun] [prisoner_age]-летний [prisoner_title]. Также [prisoner_pronoun] сообщает, что: [allSitePartsDescriptionsExceptFirst][formerColonistInfo][prisonerFullRelationInfo]</li>
+		<li>questDescription->Пленный, удерживаемый [siteFaction_name] связался с вами!\n\n[prisoner_nameDef] находится[underArmedGuard] в лагере неподалёку от [map_definite]. Спасите [prisoner_possessive], и [prisoner_pronoun] присоеденится к вашей колонии. [prisoner_pronoun] - [prisoner_title] в возрасте [prisoner_age] лет. Также [prisoner_pronoun] сообщает, что [allSitePartsDescriptionsExceptFirst][formerColonistInfo][prisonerFullRelationInfo]</li>
 		<li>formerColonistInfo(priority=1)->\n\n[prisoner_formerlyColonistInfo]</li>
 		<li>formerColonistInfo-></li>
 		<li>underArmedGuard(allowViolentQuests==true,priority=1)-> под вооружённой охраной</li>
