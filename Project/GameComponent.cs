@@ -24,7 +24,6 @@ namespace Kyrun.Reunion
 
 		// Trait-related
 		public const string TRAIT_DEF_CHARACTER = "ReunionCharacter";
-		public const string TRAIT_ALLY = "Ally";
 		public const int TRAIT_DEGREE_ALLY = 3;
 		public static TraitDef TraitDef_Character { get; private set; }
 		public static Trait Trait_Ally { get; private set; }
@@ -93,7 +92,7 @@ namespace Kyrun.Reunion
 					ListAllySpawned.Add(pawn.GetUniqueLoadID());
 					Util.Msg("Saving Player's pawn with Ally trait to Reunion list: " + pawn.Name);
 				}
-			}, TRAIT_ALLY);
+			});
 
 			// Check all World Pawns with trait and put into list for saving. Also remove trait.
 			// Use case 1: New game with "Prepare Carefully" creates World pawns.
@@ -106,7 +105,7 @@ namespace Kyrun.Reunion
 					Util.Msg("Saving World pawn with Ally trait to Reunion list: " + pawn.Name);
 				}
 				Find.WorldPawns.RemovePawn(pawn);
-			}, TRAIT_ALLY);
+			});
 
 			if (Prefs.DevMode) Util.PrintAllyList();
 
@@ -114,7 +113,7 @@ namespace Kyrun.Reunion
 		}
 
 
-		static void RegisterReunionPawnsFromList(List<Pawn> listPawns, Action<Pawn> doToPawn, string traitKey)
+		static void RegisterReunionPawnsFromList(List<Pawn> listPawns, Action<Pawn> doToPawn)
 		{
 			foreach (var pawn in listPawns)
 			{
@@ -124,7 +123,7 @@ namespace Kyrun.Reunion
 				if (traits.HasTrait(TraitDef_Character))
 				{
 					var trait = traits.GetTrait(TraitDef_Character);
-					if (trait != null && trait.Label.Contains(traitKey))
+					if (trait != null)
 					{
 						doToPawn?.Invoke(pawn);
 						TryRemoveTrait(pawn);
