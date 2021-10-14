@@ -8,5 +8,5 @@
 	<!-- Reunion_AllyRefugeePod -->
 	<Reunion_AllyRefugeePod.label>капсула с союзным беженцем</Reunion_AllyRefugeePod.label>
 	<Reunion_AllyRefugeePod.letterLabel>Воссоединение: {PAWN_nameDef}</Reunion_AllyRefugeePod.letterLabel>
-	<Reunion_AllyRefugeePod.letterText>{PAWN_title} по имени {PAWN_nameDef} упал неподалёку в транспортной капсуле.</Reunion_AllyRefugeePod.letterText>
+	<Reunion_AllyRefugeePod.letterText>Транспортная капсула потерпела крушение рядом с вашей колонией. В ней был {PAWN_title} по имени {PAWN_nameDef}.</Reunion_AllyRefugeePod.letterText>
 </LanguageData>
