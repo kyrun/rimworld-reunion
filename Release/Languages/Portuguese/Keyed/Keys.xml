@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+    <!-- EN: Minimum Probability To Spawn (X/100) -->
+    <Reunion.MinimumProbability>Probabilidade Mínima de Geração (X/100)</Reunion.MinimumProbability>
+    <!-- EN: Probability To Increment After Fail To Spawn (X/100) -->
+    <Reunion.ProbabilityIncrementStep>Probabilidade de Incremento após Falha na Geração (X/100)</Reunion.ProbabilityIncrementStep>
+
+    <!-- EN: Minimum Days Between Events -->
+    <Reunion.MinDaysBetweenEvents>Mínimo de Dias entre Eventos</Reunion.MinDaysBetweenEvents>
+    <!-- EN: Maximum Days Between Events -->
+    <Reunion.MaxDaysBetweenEvents>Máximo de Dias entre eventos</Reunion.MaxDaysBetweenEvents>
+    <!-- EN: Allow "Wanderer Joins" Event -->
+    <Reunion.AllowEventWandererJoins>Evento de Ingressão de Viajante</Reunion.AllowEventWandererJoins>
+    <!-- EN: Allow "Refugee Pod Crash" Event -->
+    <Reunion.AllowEventRefugeePodCrash>Evento de Cápsula de Escape</Reunion.AllowEventRefugeePodCrash>
+    <!-- EN: Allow "Refugee Chased" Event -->
+    <Reunion.AllowEventRefugeeChased>Evento de Perseguição de Refugiado</Reunion.AllowEventRefugeeChased>
+    <!-- EN: Allow "Prisoner Rescue" Event -->
+    <Reunion.AllowEventPrisonerRescue>Evento de Resgate de Prisioneiro</Reunion.AllowEventPrisonerRescue>
+    <!-- EN: Allow "Downed Refugee" Event -->
+    <Reunion.AllowEventDownedRefugee>Evento de Incapacitação de Refugiado</Reunion.AllowEventDownedRefugee>
+    <!-- EN: Enable Off-Map Events When Single Pawn -->
+    <Reunion.EnableHarderSolo>Eventos Externos com Colono Único</Reunion.EnableHarderSolo>
+
+</LanguageData>

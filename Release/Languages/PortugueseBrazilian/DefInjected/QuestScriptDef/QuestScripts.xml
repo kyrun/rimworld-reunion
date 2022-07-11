@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+	<!-- EN:
+		<li>questName->Reunion: [refugee_nameDef]</li>
+	-->
+	<Reunion_DownedRefugee.questNameRules.rulesStrings>
+		<li>questName->Reencontro: [refugee_nameDef]</li>
+	</Reunion_DownedRefugee.questNameRules.rulesStrings>
+	<!-- EN:
+		<li>questDescription->[refugee_nameDef] contacts you and requests help. [refugee_pronoun] is wounded and unable to move.\n\n[refugee_nameDef] is a [refugee_age]-year-old [refugee_title]. [refugee_pronoun] promises to join you if you rescue [refugee_objective].\n\n[refugee_nameDef] says that [allSitePartsDescriptionsExceptFirst][pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo(priority=1)->[refugee_pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo-></li>
+	-->
+	<Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
+		<li>questDescription->[refugee_nameDef] entra em contato com você e solicita ajuda. [refugee_pronoun] está ferido(a) e é incapaz de se mover.\n\n[refugee_nameDef] é um(a) [refugee_title] de [refugee_age] anos de idade. [refugee_pronoun] promete se juntar a você se o(a) resgatar.\n\n[refugee_nameDef] diz que [allSitePartsDescriptionsExceptFirst][pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo(priority=1)->[refugee_pawnInvolvedInQuestInfo]</li>
+		<li>pawnInvolvedInQuestInfo-></li>
+	</Reunion_DownedRefugee.questDescriptionRules.rulesStrings>
+	<!-- EN: Quest expired: [resolvedQuestName] -->
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>A missão expirou: [resolvedQuestName]'</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.label.slateRef>
+	<!-- EN: [refugee_nameDef]'s signal has been lost, and [refugee_pronoun] can no longer be rescued. The quest [resolvedQuestName] has expired. -->
+	<Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>O sinal de [refugee_nameDef] foi perdido, e [refugee_pronoun] não pode mais ser resgatado(a). A missão [resolvedQuestName] expirou.</Reunion_DownedRefugee.root.nodes.WorldObjectTimeout.node.nodes.Letter.text.slateRef>
+
+	<!-- EN:
+		<li>questName->Reunion: [prisoner_nameDef]</li>
+	-->
+	<Reunion_PrisonerRescue.questNameRules.rulesStrings>
+		<li>questName->Reencontro: [prisoner_nameDef]</li>
+	</Reunion_PrisonerRescue.questNameRules.rulesStrings>
+	<!-- EN:
+		<li>questDescription->A prisoner being held by [siteFaction_name] has managed to steal a radio and call you!\n\n[prisoner_nameDef] is being held at a camp near [map_definite][underArmedGuard]. Rescue [prisoner_objective], and [prisoner_pronoun] will join your colony. [prisoner_pronoun] is a [prisoner_age]-year-old [prisoner_title]. [prisoner_pronoun] says that [allSitePartsDescriptionsExceptFirst][formerColonistInfo][prisonerFullRelationInfo]</li>
+		<li>formerColonistInfo(priority=1)->\n\n[prisoner_formerlyColonistInfo]</li>
+		<li>formerColonistInfo-></li>
+		<li>underArmedGuard(allowViolentQuests==true,priority=1)-> under armed guard</li>
+		<li>underArmedGuard-></li>
+	-->
+	<Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
+		<li>questDescription->Um(a) prisioneiro(a) mantido(a) por [siteFaction_name] conseguiu roubar um rádio e ligar para você!\n\n[prisoner_nameDef] está preso(a) em um acampamento perto de [map_definite][underArmedGuard]. Resgate [prisoner_pronoun], e [prisoner_pronoun] se juntará à sua colônia. [prisoner_pronoun] é um(a) [prisoner_title] de [prisoner_age] anos de idade. [prisoner_pronoun] diz que [allSitePartsDescriptionsExceptFirst][formerColonistInfo][prisonerFullRelationInfo]</li>
+		<li>formerColonistInfo(priority=1)->\n\n[prisoner_formerlyColonistInfo]</li>
+		<li>formerColonistInfo-></li>
+		<li>underArmedGuard(allowViolentQuests==true,priority=1)-> sob guarda armada</li>
+		<li>underArmedGuard-></li>
+	</Reunion_PrisonerRescue.questDescriptionRules.rulesStrings>
+
+	<!-- EN:
+		<li>rewardDescription->a [joiner_age]-year-old [joiner_title] named [joiner_nameDef] will arrive and join you. [joiner_relationInfo]</li>
+	-->
+	<Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
+		<li>rewardDescription->Um(a) [joiner_title] de [joiner_age] anos de idade, chamado(a) [joiner_nameDef] chegará e se juntará a você. [joiner_relationInfo]</li>
+	</Reunion_AllyJoinerWalkIn.questDescriptionRules.rulesStrings>
+	
+	<!-- EN:
+        <li>questName->Reunion: [runnerIndef]</li>
+        <li>runnerIndef->[joiner_nameIndef]</li>
+	-->
+	<Reunion_AllyChased.questNameRules.rulesStrings>
+		<li>questName->Reencontro: [runnerIndef]</li>
+		<li>runnerIndef->[joiner_nameIndef]</li>
+	</Reunion_AllyChased.questNameRules.rulesStrings>
+	<!-- EN:         
+		<li>questDescription->A [joiner_age]-year-old [joiner_title] named [joiner_nameDef] is calling from nearby. [joiner_pronoun] is being chased by [enemyFaction_pawnsPlural] from [enemyFaction_name]!\n\n[joiner_pronoun] begs for safety and offers to join you at [map_definite].[joiner_relationInfo]\n\nIf you accept, you'll have to fight off the [enemyFaction_pawnsPluralDef] on [joiner_possessive] tail. The group of [enemyFaction_pawnsPlural] is composed of: \n\n[raid/raidPawnKinds]</li> -->
+	<Reunion_AllyChased.questDescriptionRules.rulesStrings>
+		<li>questDescription->Um(a) [joiner_title] de [joiner_age] anos de idade, chamado(a) [joiner_nameDef] está chamando por perto. [joiner_pronoun] está sendo perseguido(a) por [enemyFaction_pawnsPlural] de [enemyFaction_name]!\n\n[joiner_pronoun] implora por segurança e se oferece para se juntar a você em [map_definite].[joiner_relationInfo]\n\nSe você aceitar, terá que lutar contra os [enemyFaction_pawnsPluralDef] que estão o(a) perseguindo. O grupo dos [enemyFaction_pawnsPlural] é composto por: \n\n[raid/raidPawnKinds]</li>
+	</Reunion_AllyChased.questDescriptionRules.rulesStrings>
+	<!-- EN: {BASELABEL} chasing [../joiner_nameDef] -->
+	<Reunion_AllyChased.root.nodes.Delay-0.node.parts.customLetterLabel.value.slateRef>{BASELABEL} perseguindo [../joiner_nameDef]</Reunion_AllyChased.root.nodes.Delay-0.node.parts.customLetterLabel.value.slateRef>
+	<!-- EN: {BASETEXT}\n\nThe [enemyFaction_pawnsPlural] have come to get [../joiner_nameDef]. -->
+	<Reunion_AllyChased.root.nodes.Delay-0.node.parts.customLetterText.value.slateRef>{BASETEXT}\n\nOs [enemyFaction_pawnsPlural] vieram pegar [../joiner_nameDef].</Reunion_AllyChased.root.nodes.Delay-0.node.parts.customLetterText.value.slateRef>
+	
+</LanguageData>
