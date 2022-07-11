@@ -64,8 +64,8 @@
 		<li>questDescription->Um(a) [joiner_title] de [joiner_age] anos de idade, chamado(a) [joiner_nameDef] está chamando por perto. [joiner_pronoun] está sendo perseguido(a) por [enemyFaction_pawnsPlural] de [enemyFaction_name]!\n\n[joiner_pronoun] implora por segurança e se oferece para se juntar a você em [map_definite].[joiner_relationInfo]\n\nSe você aceitar, terá que lutar contra os [enemyFaction_pawnsPluralDef] que estão o(a) perseguindo. O grupo dos [enemyFaction_pawnsPlural] é composto por: \n\n[raid/raidPawnKinds]</li>
 	</Reunion_AllyChased.questDescriptionRules.rulesStrings>
 	<!-- EN: {BASELABEL} chasing [../joiner_nameDef] -->
-	<Reunion_AllyChased.root.nodes.Delay-0.node.parts.customLetterLabel.value.slateRef>{BASELABEL} perseguindo [../joiner_nameDef]</Reunion_AllyChased.root.nodes.Delay-0.node.parts.customLetterLabel.value.slateRef>
+	<Reunion_AllyChased.LetterLabelCashing.value.slateRef>{BASELABEL} perseguindo [../joiner_nameDef]</Reunion_AllyChased.LetterLabelCashing.value.slateRef>
 	<!-- EN: {BASETEXT}\n\nThe [enemyFaction_pawnsPlural] have come to get [../joiner_nameDef]. -->
-	<Reunion_AllyChased.root.nodes.Delay-0.node.parts.customLetterText.value.slateRef>{BASETEXT}\n\nOs [enemyFaction_pawnsPlural] vieram pegar [../joiner_nameDef].</Reunion_AllyChased.root.nodes.Delay-0.node.parts.customLetterText.value.slateRef>
+	<Reunion_AllyChased.LetterTextCashing.value.slateRef>{BASETEXT}\n\nOs [enemyFaction_pawnsPlural] vieram pegar [../joiner_nameDef].</Reunion_AllyChased.LetterTextCashing.value.slateRef>
 	
 </LanguageData>
