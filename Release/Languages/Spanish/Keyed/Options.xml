@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<LanguageData>
+<!-- 1.0 -->
+  <Reunion.MinimumProbability>Probabilidad mínima de engendrar (X/100)</Reunion.MinimumProbability>
+  <Reunion.ProbabilityIncrementStep>Probabilidad de aumento después de fallar al engendrar (X/100)</Reunion.ProbabilityIncrementStep>
+<!-- End 1.0 -->
+  <Reunion.MinDaysBetweenEvents>Días mínimos entre eventos</Reunion.MinDaysBetweenEvents>
+  <Reunion.MaxDaysBetweenEvents>Días máximos entre eventos</Reunion.MaxDaysBetweenEvents>
+  <Reunion.AllowEventWandererJoins>Permitir evento "El vagabundo se une"</Reunion.AllowEventWandererJoins>
+  <Reunion.AllowEventRefugeePodCrash>Permitir el evento "Choque de cápsulas de refugiados"</Reunion.AllowEventRefugeePodCrash>
+  <Reunion.AllowEventRefugeeChased>Permitir el evento "Refugiado perseguido"</Reunion.AllowEventRefugeeChased>
+  <Reunion.AllowEventPrisonerRescue>Permitir el evento "Rescate de prisioneros"</Reunion.AllowEventPrisonerRescue>
+  <Reunion.AllowEventDownedRefugee>Permitir el evento "Refugiado derribado"</Reunion.AllowEventDownedRefugee>
+  <Reunion.EnableHarderSolo>Habilitar eventos fuera del mapa cuando se usa un solo colono</Reunion.EnableHarderSolo>
+</LanguageData>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+	<ReunionCharacter.degreeDatas.Reunion_Ally.label>(Reclutado) Aliado</ReunionCharacter.degreeDatas.Reunion_Ally.label>
+	<ReunionCharacter.degreeDatas.Reunion_Ally.description>[PAWN_nameDef] es un aliado que algún día se unirá a tu facción.</ReunionCharacter.degreeDatas.Reunion_Ally.description>
+
+</LanguageData>

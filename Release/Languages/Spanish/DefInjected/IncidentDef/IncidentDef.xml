@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<!-- Reunion_AllyJoin -->
+	<Reunion_AllyJoin.label>aliado se une</Reunion_AllyJoin.label>
+	<Reunion_AllyJoin.letterLabel>Reclutado: {PAWN_nameDef}</Reunion_AllyJoin.letterLabel>
+	<Reunion_AllyJoin.letterText>Un {PAWN_title} llamado {PAWN_nameDef} ha llegado y se une a la colonia.</Reunion_AllyJoin.letterText>
+	
+	<!-- Reunion_AllyRefugeePod -->
+	<Reunion_AllyRefugeePod.label>aliado de cápsula de rescate se une</Reunion_AllyRefugeePod.label>
+	<Reunion_AllyRefugeePod.letterLabel>Reclutado: {PAWN_nameDef}</Reunion_AllyRefugeePod.letterLabel>
+	<Reunion_AllyRefugeePod.letterText>Un {PAWN_title} llamado {PAWN_nameDef} se estrelló cerca en una cápsula de transporte.</Reunion_AllyRefugeePod.letterText>
+</LanguageData>
