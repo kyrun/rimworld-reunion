@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-	<!-- Reunion_DownedRefugee -->
+	<!-- EN: incapacitated refugee -->
 	<Reunion_DownedRefugee.label>refugiado incapacitado</Reunion_DownedRefugee.label>
-	<Reunion_DownedRefugee.description>Um refugiado encalhado e incapacitado, implorando por ajuda.</Reunion_DownedRefugee.description>
+	<!-- EN: A stranded, incapacitated refugee begging for help. -->
+	<Reunion_DownedRefugee.description>Um refugiado incapacitado  implorando por ajuda.</Reunion_DownedRefugee.description>
 
-	<!-- Reunion_PrisonerRescue -->
+	<!-- EN: prisoner camp -->
 	<Reunion_PrisonerRescue.label>campo de prisioneiros</Reunion_PrisonerRescue.label>
+	<!-- EN: A prisoner being held by enemies. Rescue them and they will join you. -->
 	<Reunion_PrisonerRescue.description>Um prisioneiro sendo mantido por inimigos. Salve-o e ele se juntará a você.</Reunion_PrisonerRescue.description>
 
 </LanguageData>
