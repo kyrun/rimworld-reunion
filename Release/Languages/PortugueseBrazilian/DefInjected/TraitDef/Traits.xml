@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
 
-  <ReunionCharacter.degreeDatas.0.label>(Reunion) Aliado</ReunionCharacter.degreeDatas.0.label>
-  <ReunionCharacter.degreeDatas.0.description>[PAWN_nameDef] é um aliado que um dia se juntará a sua facção. </ReunionCharacter.degreeDatas.0.description>
-
+    <!-- EN: (Reunion) Ally -->
+    <ReunionCharacter.degreeDatas.0.label>aliado</ReunionCharacter.degreeDatas.0.label>
+    <!-- EN: [PAWN_nameDef] is an ally who will one day join your faction. -->
+    <ReunionCharacter.degreeDatas.0.description>[PAWN_nameDef] é um(a) aliado(a) que um dia se juntará à sua facção.</ReunionCharacter.degreeDatas.0.description>
 
 </LanguageData>
