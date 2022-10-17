@@ -8,6 +8,7 @@
 		<li>1.1</li>
 		<li>1.2</li>
 		<li>1.3</li>
+		<li>1.4</li>
 	</supportedVersions>
     <incompatibleWith>
     </incompatibleWith>
@@ -19,5 +20,5 @@
         <steamWorkshopUrl>steam://url/CommunityFilePage/2009463077</steamWorkshopUrl>
     </li>
 	</modDependencies>
-	<description>Use Prepare Carefully to add the trait "(Reunion) Ally" to a pawn in the World pool. The mod will ensure that you will encounter this pawn one way or another in the future.</description>
+	<description>Use Prepare Carefully/Character Editor to add the trait "(Reunion) Ally" to a pawn in the World pool. The mod will ensure that you will encounter this pawn one way or another in the future.</description>
 </ModMetaData>

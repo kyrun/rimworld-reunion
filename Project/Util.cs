@@ -49,13 +49,57 @@ namespace Kyrun.Reunion
 
 		public static void DressPawnIfCold(Pawn pawn, int tile)
 		{
-			// Create warm apparel in case they freeze to death
+			// Generate pawns with specific settings
 			PawnApparelGenerator.GenerateStartingApparelFor(pawn, new PawnGenerationRequest(
 				pawn.kindDef, pawn.Faction, PawnGenerationContext.NonPlayer,
-				tile, false, false, false, false, true, false, 0f,
-				true, // "forceAddFreeWarmLayerIfNeeded": THIS IS THE MOST IMPORTANT VARIABLE
-				true, true, true, false, false, false, false, 0f, 0f, null, 0f, null, null, null, null,
-				new float?(0.0f), null, null, null, null, null, null, null, null, true, true, true));
+				tile,
+				false, // forceGenerateNewPawn
+				false, // allowDead
+				false, // allowDowned
+				false, // canGeneratePawnRelations (NOT DEFAULT)
+                false, // mustBeCapableOfViolence
+                0f, // colonistRelationChanceFactor (NOT DEFAULT)
+                true, // forceAddFreeWarmLayerIfNeeded (NOT DEFAULT) - IMPORTANT: this makes pawns not die when spawned in a cold environment
+				true, // allowGay
+                true, // allowPregnant
+				true, // allowFood
+                true, // allowAddictions
+                false, // inhabitant
+                false, // certainlyBeenInCryptosleep
+                false, // forceRedressWorldPawnIfFormerColonist
+				true, // worldPawnFactionDoesntMatter (NOT DEFAULT)
+                0f, // biocodeWeaponChance
+                0f, // biocodeApparelChance
+                null, // extraPawnForExtraRelationChance
+                0f, // relationWithExtraPawnChanceFactor (NOT DEFAULT)
+                null, // validatorPreGear
+                null, // validatorPostGear
+                null, // forcedTraits
+                null, // prohibitedTraits
+                new float?(0.0f), // minChanceToRedressWorldPawn (NOT DEFAULT)
+                null, // fixedBiologicalAge
+                null, // fixedChronologicalAge
+                null, // fixedGender
+                null, // fixedLastName
+                null, // fixedBirthName
+                null, // fixedTitle
+				null, // fixedIdeo
+                false, // forceNoIdeo
+				false, // forceNoBackstory
+				false, // forbidAnyTitle
+				false, // forceDead
+				null, // forcedXenogenes
+				null, // forcedEndogenes
+                null, // forcedXenotype
+				null, // forcedCustomXenotype
+				null, // allowedXenotypes
+				0f, // forceBaselinerChance
+				pawn.DevelopmentalStage, // developmentalStages (use pawn value)
+                null, // pawnKindDefGetter
+				null, // excludeBiologicalAgeRange
+				null, // biologicalAgeRange
+				false // forceRecruitable
+				));
 		}
 
 		public static void OnPostDestroyReschedule(SitePart sitePart)

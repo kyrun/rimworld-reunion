@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <IncidentDef>
+    <defName>Reunion_AllyJoin</defName>
+    <label>ally join</label>
+    <category>Misc</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <workerClass>Kyrun.Reunion.IncidentWorker_AllyJoin</workerClass>
+    <letterLabel>Reunion: {PAWN_nameDef}</letterLabel>
+    <letterText>A {PAWN_title} named {PAWN_nameDef} has arrived and is joining the colony.</letterText>
+	<letterDef>PositiveEvent</letterDef>
+  </IncidentDef>
+  
+  <IncidentDef>
+    <defName>Reunion_AllyRefugeePod</defName>
+    <label>ally refugee pod</label>
+    <category>Misc</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <workerClass>Kyrun.Reunion.IncidentWorker_AllyRefugeePod</workerClass>
+    <letterLabel>Reunion: {PAWN_nameDef}</letterLabel>
+    <letterText>A {PAWN_title} named {PAWN_nameDef} has crashed nearby in a transport pod.</letterText>
+	<letterDef>PositiveEvent</letterDef>
+  </IncidentDef>
+  
+ </Defs>
