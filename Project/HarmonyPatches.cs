@@ -179,13 +179,9 @@ namespace Kyrun.Reunion
 
                 if (pawn == null || pawn.story == null || pawn.story.traits == null) return;
 
-                // This will place the widget under the "Randomize" button
-                const float WIDTH = 200f;
-                const float HEIGHT = 30f;
-                const float PADDING = 6f;
-                rect = rect.ContractedBy(PADDING);
+                // This will place the widget besides the "Traits" header
                 Widgets.BeginGroup(rect);
-                Rect buttonRect = new Rect(rect.width - WIDTH, HEIGHT + PADDING, WIDTH, 30f);
+                Rect buttonRect = new Rect(90, 214, 150f, 20f);
 
                 string currLabel = GetReunionTraitDisplayName(GetReunionTrait(pawn));
 
