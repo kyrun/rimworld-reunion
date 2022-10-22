@@ -25,8 +25,43 @@ namespace Kyrun.Reunion
 		// Trait-related
 		public const string TRAIT_DEF_CHARACTER = "ReunionCharacter";
 		public const int TRAIT_DEGREE_ALLY = 3;
-		public static TraitDef TraitDef_Character { get; private set; }
-		public static Trait Trait_Ally { get; private set; }
+
+		static TraitDef m_TraitDefCharacter;
+		public static TraitDef TraitDef_Character
+		{
+			get
+			{
+                if (m_TraitDefCharacter == null)
+				{
+                    m_TraitDefCharacter = TraitDef.Named(TRAIT_DEF_CHARACTER);
+                }
+				return m_TraitDefCharacter;
+            }
+		}
+
+		static Trait m_TraitAlly;
+		public static Trait Trait_Ally
+        {
+            get
+            {
+                if (m_TraitAlly == null)
+                {
+                    m_TraitAlly = new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true);
+                }
+                return m_TraitAlly;
+            }
+        }
+
+        public static IReadOnlyList<Trait> ReunionTraits
+		{
+			get
+			{
+				return new List<Trait>()
+				{
+					Trait_Ally
+				};
+			}
+		}
 
 		// Save key
 		const string SAVE_NEXT_EVENT_TICK = "Reunion_NextEventTick";
@@ -39,14 +74,7 @@ namespace Kyrun.Reunion
 		public GameComponent(Game game) : base()
 		{
 			Settings = LoadedModManager.GetMod<Mod>().GetSettings<Settings>();
-		}
-
-
-		public static void PreInit()
-		{
-			TraitDef_Character = TraitDef.Named(TRAIT_DEF_CHARACTER);
-			Trait_Ally = new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true);
-		}
+        }
 
 
 		public static void InitOnNewGame()
