@@ -72,6 +72,11 @@ namespace Kyrun.Reunion
             allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void PrintAllyList()
         {
+            if (GameComponent.ListAllyAvailable == null)
+            {
+                Util.Warn("PrintAllyList: GameComponent.ListAllyAvailable is null");
+                return;
+            }
             if (GameComponent.ListAllyAvailable.Count > 0)
             {
                 Util.PrintAllyList();

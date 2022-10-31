@@ -187,7 +187,27 @@ namespace Kyrun.Reunion
 
 		public static void SetupSpawn(Pawn pawn, List<Pawn> listSource, List<string> listDest)
 		{
-			listSource.Remove(pawn);
+			if (pawn == null)
+			{
+				Util.Warn("SetupSpawn: pawn is null");
+                return;
+            }
+            if (listSource == null)
+            {
+                Util.Warn("SetupSpawn: listSource is null");
+                return;
+            }
+            if (listDest == null)
+            {
+                Util.Warn("SetupSpawn: listDest is null");
+                return;
+            }
+            if (pawn.workSettings == null)
+            {
+                Util.Warn("SetupSpawn: pawn.workSettings is null");
+				return;
+            }
+            listSource.Remove(pawn);
 			listDest.Add(pawn.GetUniqueLoadID());
 			pawn.SetFactionDirect(null); // remove faction, if any
 			pawn.workSettings.EnableAndInitializeIfNotAlreadyInitialized(); // prevent some error which I don't yet understand
