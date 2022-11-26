@@ -4,13 +4,15 @@ using HarmonyLib;
 
 namespace Kyrun.Reunion
 {
-	[StaticConstructorOnStartup]
-	class Main
-	{
-		static Main()
-		{
-			var harmony = new Harmony("kyrun.mod.reunion");
-			harmony.PatchAll(Assembly.GetExecutingAssembly());
-		}
-	}
+    [StaticConstructorOnStartup]
+    class Main
+    {
+        public static Harmony HarmonyInstance;
+
+        static Main()
+        {
+            HarmonyInstance = new Harmony("kyrun.mod.reunion");
+            HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
+        }
+    }
 }

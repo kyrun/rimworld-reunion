@@ -96,11 +96,19 @@ namespace Kyrun.Reunion
         const string NO_TRAIT_NAME = "Reunion.NoTrait";
 
         // Create a display name for Reunion traits, use "no trait" string if none
-        internal static string GetReunionTraitDisplayName(Trait trait)
+        internal static string GetReunionTraitDisplayName(Trait trait, Pawn pawn = null)
         {
             var displayName = "Reunion: ";
+
             if (trait == null) displayName += NO_TRAIT_NAME.Translate();
-            else displayName += trait.Label;
+            else
+            {
+                if (trait.pawn == null && pawn != null)
+                {
+                    trait.pawn = pawn;
+                }
+                displayName += trait.Label;
+            }
 
             return displayName;
         }
@@ -145,7 +153,7 @@ namespace Kyrun.Reunion
 
                     listDropdownElement.Add(new Widgets.DropdownMenuElement<Trait>
                     {
-                        option = new FloatMenuOption(GetReunionTraitDisplayName(trait), delegate ()
+                        option = new FloatMenuOption(GetReunionTraitDisplayName(trait, pawn), delegate ()
                         {
                             foreach (var reunionTrait in GameComponent.ReunionTraits)
                             {
