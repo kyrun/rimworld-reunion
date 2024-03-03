@@ -38,9 +38,9 @@ namespace Kyrun.Reunion
                 if (p != null && p.story != null)
                 {
                     GameComponent.TryRemoveTrait(p);
-                    GameComponent.ListAllyAvailable.Add(p);
+                    GameComponent.AddPawnToAvailableList(p);
                     Find.WorldPawns.RemovePawn(p);
-                    Util.Msg(p.Name + " has been removed from the World and added to the Ally list.");
+                    Util.Msg("[DEBUG] " + p.Name + " has been removed from the World and added to the Ally list.");
                     if (GameComponent.ListAllyAvailable.Count == 1) // list is not empty anymore, try to schedule a new event
                     {
                         GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
