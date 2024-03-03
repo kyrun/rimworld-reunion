@@ -20,6 +20,8 @@ namespace Kyrun.Reunion
         public static List<Pawn> ListAllyAvailable = new List<Pawn>();
         public static List<string> ListAllySpawned = new List<string>();
 
+        private static Dictionary<string, long> DictAllyStartBioAge = new Dictionary<string, long>(); // transient
+
         // Variables
         public static int NextEventTick = 0;
 
@@ -66,8 +68,9 @@ namespace Kyrun.Reunion
 
         // Save key
         const string SAVE_NEXT_EVENT_TICK = "Reunion_NextEventTick";
-        const string SAVE_KEY_LIST_ALLY_SPAWNED = "Reunion_AllySpawned";
         const string SAVE_KEY_LIST_ALLY_AVAILABLE = "Reunion_AllyAvailable";
+        const string SAVE_KEY_LIST_ALLY_SPAWNED = "Reunion_AllySpawned";
+        const string SAVE_KEY_DICT_ALLY_START_BIO_AGE = "Reunion_AllyStartBioAge";
 
         public static Settings Settings { get; private set; }
 
@@ -82,6 +85,7 @@ namespace Kyrun.Reunion
         {
             ListAllyAvailable.Clear();
             ListAllySpawned.Clear();
+            DictAllyStartBioAge.Clear();
             NextEventTick = 0;
 #if TESTING
 			/* */
@@ -92,7 +96,7 @@ namespace Kyrun.Reunion
 					PawnGenerationContext.NonPlayer, -1, true);
 				var newPawn = PawnGenerator.GeneratePawn(pgr);
 				newPawn.Name = NameTriple.FromString("ReunionPawn" + i);
-				ListAllyAvailable.Add(newPawn);
+                AddPawnToAvailableList(newPawn);
 			}
 			/* */
 #endif
@@ -103,17 +107,25 @@ namespace Kyrun.Reunion
         {
             if (ListAllyAvailable == null) ListAllyAvailable = new List<Pawn>();
             if (ListAllySpawned == null) ListAllySpawned = new List<string>();
+            if (DictAllyStartBioAge == null) DictAllyStartBioAge = new Dictionary<string, long>();
 
-            if (NextEventTick <= 0) Util.Msg("No events scheduled");
+            if (NextEventTick == 0 && ListAllyAvailable.Count > 0)
+            {
+                Util.Msg("No events scheduled, but there is at least 1 available pawn.");
+                TryScheduleNextEvent(ScheduleMode.Normal);
+            }
             else Util.PrintNextEventTimeRemaining();
         }
 
 
         public static void PostInit()
         {
-            // Check player's existing colonists with traits and put into list for saving.
-            // This means that "Prepare Carefully" starting colonists with the Ally trait will be "found" again
-            // if they are somehow lost to the World pool.
+            DictAllyStartBioAge.Clear();
+
+            // Check player's existing pawns with Ally trait and put into list for saving.
+            // This means that starting pawns (as opposed to "left behind" pawns) with the Ally trait
+            // will be given the Reunion treatment if they are ever lost (passed to World pool).
+            // This feature is not documented but if you are reading this comment off the repo, this is your reward. :)
             RegisterReunionPawnsFromList(PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction, (pawn) =>
             {
                 if (!ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
@@ -123,18 +135,20 @@ namespace Kyrun.Reunion
                 }
             });
 
-            // Check all World Pawns with trait and put into list for saving. Also remove trait.
-            // Use case 1: New game with "Prepare Carefully" creates World pawns.
+            // Check all World Pawns with trait and put into list for saving.
+            // Use case 1: New game creates STARTING World pawns flagged with Ally trait during creation.
             // Use case 2: Backwards compatibility for loading existing saves from older version of this mod.
             RegisterReunionPawnsFromList(Current.Game.World.worldPawns.AllPawnsAlive, (pawn) =>
             {
-                if (!ListAllyAvailable.Contains(pawn))
-                {
-                    ListAllyAvailable.Add(pawn);
-                    Util.Msg("Saving World pawn with Ally trait to Reunion list: " + pawn.Name);
-                }
+                AddPawnToAvailableList(pawn, false); // don't save bio age yet, do it with the rest of the pawns already in the list (from Load Game)
                 Find.WorldPawns.RemovePawn(pawn);
             });
+
+            // Save bio age from Available pawns (includes new game and loaded game)
+            foreach (Pawn pawn in ListAllyAvailable)
+            {
+                StorePawnStartBioAge(pawn);
+            }
 
             if (Prefs.DevMode) Util.PrintAllyList();
 
@@ -162,11 +176,65 @@ namespace Kyrun.Reunion
         }
 
 
+        public static void AddPawnToAvailableList(Pawn pawn, bool saveBioAge = true)
+        {
+            if (pawn != null && !pawn.Dead && !ListAllyAvailable.Contains(pawn))
+            {
+                Util.Msg("Saving World pawn with Ally trait to Reunion list: " + pawn.Name);
+
+                // Clear all temporary hediffs
+                if (pawn.health != null && pawn.health.hediffSet != null && pawn.health.hediffSet.hediffs != null)
+                {
+                    pawn.SetFactionDirect(null); // clear faction to prevent notifications
+
+                    HediffSet hediffSet = pawn.health.hediffSet;
+                    for (int i = 0; i < hediffSet.hediffs.Count; ++i)
+                    {
+                        Hediff hediff = hediffSet.hediffs[i];
+                        if (!hediff.IsPermanent() &&  // temporary
+                            !hediff.def.chronic && // not chronic
+                            !(hediff is Hediff_MissingPart) && // not a missing part
+                            hediff.def.causesNeed == null && // does not cause need
+                            !hediff.def.countsAsAddedPartOrImplant) // not implant/prosthetic
+                        {
+                            hediffSet.hediffs.RemoveAt(i);
+                            --i;
+                        }
+                    };
+
+                    pawn.health.capacities.Clear();
+                    pawn.health.CheckForStateChange(null, null);
+
+                    hediffSet.DirtyCache();
+                }
+
+                ListAllyAvailable.Add(pawn);
+
+                if (saveBioAge) StorePawnStartBioAge(pawn);
+            }
+        }
+
+
+        public static void StorePawnStartBioAge(Pawn pawn)
+        {
+            if (pawn == null || pawn.ageTracker == null)
+            {
+                return;
+            }
+
+            // Manually reset the age to start of new game so that save data contains bio age at that time.
+            // When the pawn is restored, the age can then be back-calculated.
+            pawn.ageTracker.AgeBiologicalTicks -= GenTicks.TicksAbs;
+
+            DictAllyStartBioAge[pawn.GetUniqueLoadID()] = pawn.ageTracker.AgeBiologicalTicks;
+        }
+
+
         public static Pawn GetRandomAllyForSpawning()
         {
             var randomIndex = Random.Range(0, ListAllyAvailable.Count);
             var pawn = ListAllyAvailable[randomIndex];
-            SetupSpawn(pawn, ListAllyAvailable, ListAllySpawned);
+            SetupSpawn(pawn);
 
             return pawn;
         }
@@ -186,22 +254,65 @@ namespace Kyrun.Reunion
         }
 
 
-		public static void SetupSpawn(Pawn pawn, List<Pawn> listSource, List<string> listDest)
+		public static void SetupSpawn(Pawn pawn)
 		{
-			listSource.Remove(pawn);
-			listDest.Add(pawn.GetUniqueLoadID());
+			ListAllyAvailable.Remove(pawn);
+			ListAllySpawned.Add(pawn.GetUniqueLoadID());
 			pawn.SetFactionDirect(null); // remove faction, if any
-			pawn.workSettings.EnableAndInitializeIfNotAlreadyInitialized(); // prevent some error which I don't yet understand
+
+            if (Find.TickManager != null && pawn != null && pawn.ageTracker != null && DictAllyStartBioAge.ContainsKey(pawn.GetUniqueLoadID()))
+            {
+                pawn.ageTracker.AgeBiologicalTicks = DictAllyStartBioAge[pawn.GetUniqueLoadID()] + GenTicks.TicksAbs;
+            }
+
+            if (pawn.health != null)
+            {
+                if (pawn.health.capacities != null)
+                {
+                    pawn.health.capacities.Clear();
+                }
+
+                pawn.health.CheckForStateChange(null, null);
+
+                if (pawn.health.hediffSet != null)
+                {
+                    pawn.health.hediffSet.DirtyCache();
+                }
+            }
+
+            pawn.workSettings.EnableAndInitializeIfNotAlreadyInitialized(); // prevent some error which I don't yet understand
 		}
 
 
-        public static void ReturnToAvailable(Pawn pawn, List<string> listJoined, List<Pawn> listAvailable)
+        public static void ReturnToAvailable(Pawn pawn)
         {
-            listJoined.Remove(pawn.GetUniqueLoadID());
-            listAvailable.Add(pawn);
+            ListAllySpawned.Remove(pawn.GetUniqueLoadID());
+
+            if (pawn.health != null && pawn.health.hediffSet != null && pawn.health.hediffSet.hediffs != null)
+            {
+                HediffSet hediffSet = pawn.health.hediffSet;
+                for (int i = 0; i < hediffSet.hediffs.Count; ++i)
+                {
+                    Hediff hediff = hediffSet.hediffs[i];
+                    if (hediff is Hediff_MissingPart hediffMissingPart)
+                    {
+                        if (hediffMissingPart.IsFresh)
+                        {
+                            Util.Warn(pawn.Name + " was lost by the player while having a fresh missing part. The pawn has bled to death and is lost forever.");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            AddPawnToAvailableList(pawn);
+
             Util.Msg(pawn.Name + " was lost by the player and made available for Reunion to spawn again.");
 
-            TryScheduleNextEvent();
+            if (ListAllySpawned.Count == 1) // list was previously empty, restart the event scheduling again
+            {
+                TryScheduleNextEvent();
+            }
         }
 
 

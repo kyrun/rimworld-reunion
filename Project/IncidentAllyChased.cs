@@ -106,7 +106,7 @@ namespace Kyrun.Reunion
 			GameComponent.FlagNextEventReadyForScheduling();
 			foreach (var pawn in listToReturn)
 			{
-				GameComponent.ReturnToAvailable(pawn, GameComponent.ListAllySpawned, GameComponent.ListAllyAvailable);
+				GameComponent.ReturnToAvailable(pawn);
 			}
 
 			if (quest.State == QuestState.EndedOfferExpired) saveByReference = true;

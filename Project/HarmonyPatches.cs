@@ -55,11 +55,11 @@ namespace Kyrun.Reunion
             static bool Prefix(RimWorld.Planet.WorldPawns __instance, ref Pawn pawn, ref RimWorld.Planet.PawnDiscardDecideMode discardMode)
             {
                 if (Current.Game.Info.RealPlayTimeInteracting > 0 && // prevent this from firing when the game hasn't even started proper
+                    !pawn.Dead && // ignore dead pawns
                     !pawn.Destroyed && // ignore pawns destroyed for whatever reason
                     !KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
                     !PawnsFinder.AllCaravansAndTravelingTransportPods_Alive.Contains(pawn) && // ignore caravan/pods
                     (pawn.ParentHolder == null || !(pawn.ParentHolder is CompTransporter)) && // ignore pawns in shuttle
-                    pawn.Faction != Faction.OfPlayer &&
                     GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
                 {
                     if (PawnComponentsUtility.HasSpawnedComponents(pawn))
@@ -67,7 +67,7 @@ namespace Kyrun.Reunion
                         PawnComponentsUtility.RemoveComponentsOnDespawned(pawn);
                     }
                     if (pawn.IsPrisoner) pawn.guest.SetGuestStatus(null, GuestStatus.Guest);
-                    GameComponent.ReturnToAvailable(pawn, GameComponent.ListAllySpawned, GameComponent.ListAllyAvailable);
+                    GameComponent.ReturnToAvailable(pawn);
                     return false;
                 }
                 return true;
@@ -189,7 +189,7 @@ namespace Kyrun.Reunion
 
                 // This will place the widget besides the "Traits" header
                 Widgets.BeginGroup(rect);
-                Rect buttonRect = new Rect(90, 214, 150f, 20f);
+                Rect buttonRect = new Rect(90, 232, 150f, 20f);
 
                 string currLabel = GetReunionTraitDisplayName(GetReunionTrait(pawn));
 
