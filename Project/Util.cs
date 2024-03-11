@@ -36,7 +36,14 @@ namespace Kyrun.Reunion
 			if (Prefs.DevMode)
 			{
 				var diff = GameComponent.NextEventTick - Find.TickManager.TicksGame;
-				Msg("Next event in " + ((float)diff / GenDate.TicksPerDay).ToString("0.00") + " days");
+				if (diff > 0)
+				{
+					Msg("Next event in " + ((float)diff / GenDate.TicksPerDay).ToString("0.00") + " days");
+				}
+				else
+                {
+                    Msg("A Reunion event is happening now.");
+                }
 			}
 		}
 

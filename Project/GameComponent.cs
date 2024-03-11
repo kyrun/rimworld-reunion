@@ -20,8 +20,6 @@ namespace Kyrun.Reunion
         public static List<Pawn> ListAllyAvailable = new List<Pawn>();
         public static List<string> ListAllySpawned = new List<string>();
 
-        private static Dictionary<string, long> DictAllyStartBioAge = new Dictionary<string, long>(); // transient
-
         // Variables
         public static int NextEventTick = 0;
 
@@ -85,7 +83,6 @@ namespace Kyrun.Reunion
         {
             ListAllyAvailable.Clear();
             ListAllySpawned.Clear();
-            DictAllyStartBioAge.Clear();
             NextEventTick = 0;
 #if TESTING
 			/* */
@@ -107,7 +104,6 @@ namespace Kyrun.Reunion
         {
             if (ListAllyAvailable == null) ListAllyAvailable = new List<Pawn>();
             if (ListAllySpawned == null) ListAllySpawned = new List<string>();
-            if (DictAllyStartBioAge == null) DictAllyStartBioAge = new Dictionary<string, long>();
 
             if (NextEventTick == 0 && ListAllyAvailable.Count > 0)
             {
@@ -120,8 +116,6 @@ namespace Kyrun.Reunion
 
         public static void PostInit()
         {
-            DictAllyStartBioAge.Clear();
-
             // Check player's existing pawns with Ally trait and put into list for saving.
             // This means that starting pawns (as opposed to "left behind" pawns) with the Ally trait
             // will be given the Reunion treatment if they are ever lost (passed to World pool).
@@ -140,15 +134,9 @@ namespace Kyrun.Reunion
             // Use case 2: Backwards compatibility for loading existing saves from older version of this mod.
             RegisterReunionPawnsFromList(Current.Game.World.worldPawns.AllPawnsAlive, (pawn) =>
             {
-                AddPawnToAvailableList(pawn, false); // don't save bio age yet, do it with the rest of the pawns already in the list (from Load Game)
+                AddPawnToAvailableList(pawn);
                 Find.WorldPawns.RemovePawn(pawn);
             });
-
-            // Save bio age from Available pawns (includes new game and loaded game)
-            foreach (Pawn pawn in ListAllyAvailable)
-            {
-                StorePawnStartBioAge(pawn);
-            }
 
             if (Prefs.DevMode) Util.PrintAllyList();
 
@@ -176,7 +164,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void AddPawnToAvailableList(Pawn pawn, bool saveBioAge = true)
+        public static void AddPawnToAvailableList(Pawn pawn)
         {
             if (pawn != null && !pawn.Dead && !ListAllyAvailable.Contains(pawn))
             {
@@ -208,25 +196,18 @@ namespace Kyrun.Reunion
                     hediffSet.DirtyCache();
                 }
 
+
+                // Substract the game-time passed from the pawns age during the time of saving.
+                // This gives us the pawns age at the start of a new game.
+                // We ONLY ever save the pawns age at the start of a new game.
+                // When the pawn is restored, the age can then be back-calculated.
+                if (pawn.ageTracker != null)
+                {
+                    pawn.ageTracker.AgeBiologicalTicks -= GenTicks.TicksAbs;
+                }
+
                 ListAllyAvailable.Add(pawn);
-
-                if (saveBioAge) StorePawnStartBioAge(pawn);
             }
-        }
-
-
-        public static void StorePawnStartBioAge(Pawn pawn)
-        {
-            if (pawn == null || pawn.ageTracker == null)
-            {
-                return;
-            }
-
-            // Manually reset the age to start of new game so that save data contains bio age at that time.
-            // When the pawn is restored, the age can then be back-calculated.
-            pawn.ageTracker.AgeBiologicalTicks -= GenTicks.TicksAbs;
-
-            DictAllyStartBioAge[pawn.GetUniqueLoadID()] = pawn.ageTracker.AgeBiologicalTicks;
         }
 
 
@@ -260,9 +241,11 @@ namespace Kyrun.Reunion
 			ListAllySpawned.Add(pawn.GetUniqueLoadID());
 			pawn.SetFactionDirect(null); // remove faction, if any
 
-            if (Find.TickManager != null && pawn != null && pawn.ageTracker != null && DictAllyStartBioAge.ContainsKey(pawn.GetUniqueLoadID()))
+            if (Find.TickManager != null && pawn != null && pawn.ageTracker != null)
             {
-                pawn.ageTracker.AgeBiologicalTicks = DictAllyStartBioAge[pawn.GetUniqueLoadID()] + GenTicks.TicksAbs;
+                // The pawn is only ever saved with the age at the start of the game.
+                // So whenever we setup pawn for spawning, just add back game-time passed.
+                pawn.ageTracker.AgeBiologicalTicks += GenTicks.TicksAbs;
             }
 
             if (pawn.health != null)
