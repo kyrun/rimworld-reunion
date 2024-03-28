@@ -177,13 +177,19 @@ namespace Kyrun.Reunion
 
 
         // Draw the Reunion drop down widget
-        [HarmonyPatch(typeof(Page_ConfigureStartingPawns), "DrawPortraitArea")]
-        [HarmonyPatch(new Type[] { typeof(Rect) })]
-        internal static class Page_ConfigureStartingPawns_DrawPortraitArea
+        [HarmonyPatch(typeof(StartingPawnUtility), "DrawPortraitArea")]
+        [HarmonyPatch(new Type[] { typeof(Rect), typeof(int), typeof(bool), typeof(bool) })]
+        internal static class StartingPawnUtility_DrawPortraitArea
         {
-            static void Postfix(Page_ConfigureStartingPawns __instance, Rect rect, ref Pawn ___curPawn)
+            static void Postfix(Rect rect, ref int pawnIndex, ref bool renderClothes, ref bool renderHeadgear)
             {
-                Pawn pawn = ___curPawn;
+                List<Pawn> StartingAndOptionalPawns = Find.GameInitData.startingAndOptionalPawns;
+                if (pawnIndex >= StartingAndOptionalPawns.Count)
+                {
+                    return;
+                }
+
+                Pawn pawn = StartingAndOptionalPawns[pawnIndex];
 
                 if (pawn == null || pawn.story == null || pawn.story.traits == null) return;
 
