@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  
+  <SitePartDef>
+    <defName>Reunion_PrisonerRescue</defName>
+    <label>prisoner camp</label>
+    <description>A prisoner being held by enemies. Rescue them and they will join you.</description>
+    <workerClass>Kyrun.Reunion.SitePartWorker_PrisonerRescue</workerClass>
+    <siteTexture>World/WorldObjects/Sites/GenericSite</siteTexture>
+    <expandingIconTexture>World/WorldObjects/Expanding/Sites/Prisoner</expandingIconTexture>
+    <forceExitAndRemoveMapCountdownDurationDays>6</forceExitAndRemoveMapCountdownDurationDays>
+    <requiresFaction>true</requiresFaction>
+    <!-- <increasesPopulation>true</increasesPopulation> -->
+    <handlesWorldObjectTimeoutInspectString>true</handlesWorldObjectTimeoutInspectString>
+    <tags>
+      <li>Reunion_PrisonerRescue</li>
+    </tags>
+  </SitePartDef>
+
+  <GenStepDef>
+    <defName>Reunion_PrisonerRescue</defName>
+    <linkWithSite>Reunion_PrisonerRescue</linkWithSite>
+    <order>460</order>
+    <genStep Class="GenStep_PrisonerWillingToJoin">
+      <count>1</count>
+      <nearMapCenter>true</nearMapCenter>
+    </genStep>
+  </GenStepDef>
+
+</Defs>
