@@ -15,10 +15,13 @@ namespace Kyrun.Reunion
 	{
 		public static bool Do()
 		{
-			var pawn = GameComponent.GetRandomAllyForSpawning();
-			if (pawn == null) return false;
+			Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            if (pawn == null)
+            {
+                return false;
+            }
 
-			HealthUtility.DamageUntilDowned(pawn, true);
+            HealthUtility.DamageUntilDowned(pawn, true);
 
 			var def = IncidentDefs.Reunion_AllyRefugeePod;
 			Map map = Current.Game.RandomPlayerHomeMap;

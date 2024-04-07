@@ -110,7 +110,14 @@ namespace Kyrun.Reunion
                 Util.Msg("No events scheduled, but there is at least 1 available pawn.");
                 TryScheduleNextEvent(ScheduleMode.Normal);
             }
-            else Util.PrintNextEventTimeRemaining();
+            else if (ListAllyAvailable.Count > 0)
+            {
+                Util.PrintNextEventTimeRemaining();
+            }
+            else
+            {
+                Util.Msg("Game loaded, no pawns in Ally list.");
+            }
         }
 
 
@@ -125,7 +132,7 @@ namespace Kyrun.Reunion
                 if (!ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
                 {
                     ListAllySpawned.Add(pawn.GetUniqueLoadID());
-                    Util.Msg("Saving Player's pawn with Ally trait to Reunion list: " + pawn.Name);
+                    Util.Msg("Saved Player's pawn with Ally trait to Reunion list: " + pawn.Name);
                 }
             });
 
@@ -138,7 +145,10 @@ namespace Kyrun.Reunion
                 Find.WorldPawns.RemovePawn(pawn);
             });
 
-            if (Prefs.DevMode) Util.PrintAllyList();
+            if (ListAllyAvailable.Count > 0)
+            {
+                Util.PrintAllyList();
+            }
 
             TryScheduleNextEvent(ScheduleMode.Init);
         }
@@ -168,8 +178,6 @@ namespace Kyrun.Reunion
         {
             if (pawn != null && !pawn.Dead && !ListAllyAvailable.Contains(pawn))
             {
-                Util.Msg("Saving World pawn with Ally trait to Reunion list: " + pawn.Name);
-
                 // Clear all temporary hediffs
                 if (pawn.health != null && pawn.health.hediffSet != null && pawn.health.hediffSet.hediffs != null)
                 {
@@ -206,6 +214,8 @@ namespace Kyrun.Reunion
                     pawn.ageTracker.AgeBiologicalTicks -= GenTicks.TicksAbs;
                 }
 
+                Util.Msg("Saved World pawn with Ally trait to Reunion list: " + pawn.Name + ", age " + pawn.ageTracker.AgeBiologicalYearsFloat.ToString("0.00"));
+
                 ListAllyAvailable.Add(pawn);
             }
         }
@@ -213,8 +223,20 @@ namespace Kyrun.Reunion
 
         public static Pawn GetRandomAllyForSpawning()
         {
+            if (ListAllyAvailable.Count == 0)
+            {
+                Util.Error("Failed to get random ally for spawning because the Ally list is empty.");
+                return null;
+            }
+
             var randomIndex = Random.Range(0, ListAllyAvailable.Count);
-            var pawn = ListAllyAvailable[randomIndex];
+            Pawn pawn = ListAllyAvailable[randomIndex];
+            if (pawn == null)
+            {
+                Util.Error("Ally in list at index " + randomIndex + " is null.");
+                return null;
+            }
+
             SetupSpawn(pawn);
 
             return pawn;
@@ -238,7 +260,7 @@ namespace Kyrun.Reunion
 		public static void SetupSpawn(Pawn pawn)
 		{
 			ListAllyAvailable.Remove(pawn);
-			ListAllySpawned.Add(pawn.GetUniqueLoadID());
+            ListAllySpawned.Add(pawn.GetUniqueLoadID());
 			pawn.SetFactionDirect(null); // remove faction, if any
 
             if (Find.TickManager != null && pawn != null && pawn.ageTracker != null)
@@ -292,10 +314,7 @@ namespace Kyrun.Reunion
 
             Util.Msg(pawn.Name + " was lost by the player and made available for Reunion to spawn again.");
 
-            if (ListAllySpawned.Count == 1) // list was previously empty, restart the event scheduling again
-            {
-                TryScheduleNextEvent();
-            }
+            TryScheduleNextEvent();
         }
 
 
@@ -355,7 +374,7 @@ namespace Kyrun.Reunion
 
             if (ListAllyAvailable.Count <= 0) // no more allies
             {
-                Util.Warn("No available Ally pawns, event should not have fired!");
+                Util.Error("No available Ally pawns, event should not have fired!");
                 return;
             }
             if (Current.Game.AnyPlayerHomeMap == null) // no map
