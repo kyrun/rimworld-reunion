@@ -14,10 +14,13 @@ namespace Kyrun.Reunion
 				return false;
 			}
 
-			var pawn = GameComponent.GetRandomAllyForSpawning();
-			if (pawn == null) return false;
+            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            if (pawn == null)
+            {
+                return false;
+            }
 
-			pawn.SetFactionDirect(Faction.OfPlayer);
+            pawn.SetFactionDirect(Faction.OfPlayer);
 			GenSpawn.Spawn(pawn, loc, map, WipeMode.Vanish);
 
 			var def = IncidentDefs.Reunion_AllyJoin;

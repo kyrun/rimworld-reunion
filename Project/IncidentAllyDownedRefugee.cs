@@ -28,9 +28,13 @@ namespace Kyrun.Reunion
 			Util.SitePartWorker_Base_Notify_GeneratedByQuestGen(part, outExtraDescriptionRules, outExtraDescriptionConstants);
 
 			// Replaces DownedRefugeeQuestUtility.GenerateRefugee
-			Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            if (pawn == null)
+            {
+                return;
+            }
 
-			Util.DressPawnIfCold(pawn, part.site.Tile);
+            Util.DressPawnIfCold(pawn, part.site.Tile);
 
 			HealthUtility.DamageUntilDowned(pawn, false);
 			HealthUtility.DamageLegsUntilIncapableOfMoving(pawn, false);

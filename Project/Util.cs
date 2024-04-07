@@ -18,9 +18,14 @@ namespace Kyrun.Reunion
 		public static void Warn(object o)
 		{
 			Log.Warning("[Reunion] " + o);
-		}
+        }
 
-		public static void PrintAllyList()
+        public static void Error(object o)
+        {
+            Log.Error("[Reunion] " + o);
+        }
+
+        public static void PrintAllyList()
 		{
 			var str = "";
 			foreach (var ally in GameComponent.ListAllyAvailable)

@@ -23,7 +23,11 @@ namespace Kyrun.Reunion
 	{
 		protected override void RunInt()
 		{
-			var pawn = GameComponent.GetRandomAllyForSpawning();
+			Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+			if (pawn == null)
+			{
+				return;
+			}
 
 			Slate slate = QuestGen.slate;
 
