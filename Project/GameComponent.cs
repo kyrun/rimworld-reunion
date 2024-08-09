@@ -178,32 +178,14 @@ namespace Kyrun.Reunion
         {
             if (pawn != null && !pawn.Dead && !ListAllyAvailable.Contains(pawn))
             {
-                // Clear all temporary hediffs
-                if (pawn.health != null && pawn.health.hediffSet != null && pawn.health.hediffSet.hediffs != null)
+                if (pawn.health != null)
                 {
-                    pawn.SetFactionDirect(null); // clear faction to prevent notifications
-
-                    HediffSet hediffSet = pawn.health.hediffSet;
-                    for (int i = 0; i < hediffSet.hediffs.Count; ++i)
+                    // Tend to hediffs require tending
+                    while (pawn.health.HasHediffsNeedingTend())
                     {
-                        Hediff hediff = hediffSet.hediffs[i];
-                        if (!hediff.IsPermanent() &&  // temporary
-                            !hediff.def.chronic && // not chronic
-                            !(hediff is Hediff_MissingPart) && // not a missing part
-                            hediff.def.causesNeed == null && // does not cause need
-                            !hediff.def.countsAsAddedPartOrImplant) // not implant/prosthetic
-                        {
-                            hediffSet.hediffs.RemoveAt(i);
-                            --i;
-                        }
-                    };
-
-                    pawn.health.capacities.Clear();
-                    pawn.health.CheckForStateChange(null, null);
-
-                    hediffSet.DirtyCache();
+                        TendUtility.DoTend(null, pawn, null);
+                    }
                 }
-
 
                 // Substract the game-time passed from the pawns age during the time of saving.
                 // This gives us the pawns age at the start of a new game.
@@ -328,6 +310,7 @@ namespace Kyrun.Reunion
         {
             if (ListAllyAvailable.Count == 0)
             {
+                FlagNextEventReadyForScheduling();
                 if (mode != ScheduleMode.Init) Util.Msg("No available Reunion pawns, Reunion events will not fire from now on.");
                 return;
             }
