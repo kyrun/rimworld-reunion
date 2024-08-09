@@ -4,6 +4,7 @@ using UnityEngine;
 using RimWorld;
 using Verse;
 using HarmonyLib;
+using RimWorld.Planet;
 
 namespace Kyrun.Reunion
 {
@@ -52,6 +53,26 @@ namespace Kyrun.Reunion
         [HarmonyPatch(new Type[] { typeof(Pawn), typeof(RimWorld.Planet.PawnDiscardDecideMode) })]
         static class WorldPawns_PassToWorld
         {
+            static bool IsLeavingInShuttleWithNoDestination(Pawn pawn)
+            {
+                var parentHolder = pawn.ParentHolder;
+                while (parentHolder != null)
+                {
+                    if (parentHolder is FlyShipLeaving)
+                    {
+                        var flyShipLeaving = (FlyShipLeaving)parentHolder;
+                        if (flyShipLeaving.destinationTile == -1 &&
+                            flyShipLeaving.createWorldObject == false)
+                        {
+                            return true;
+                        }
+                        break;
+                    }
+                    parentHolder = parentHolder.ParentHolder;
+                }
+                return false;
+            }
+
             static bool Prefix(RimWorld.Planet.WorldPawns __instance, ref Pawn pawn, ref RimWorld.Planet.PawnDiscardDecideMode discardMode)
             {
                 if (Current.Game.Info.RealPlayTimeInteracting > 0 && // prevent this from firing when the game hasn't even started proper
@@ -59,7 +80,7 @@ namespace Kyrun.Reunion
                     !pawn.Destroyed && // ignore pawns destroyed for whatever reason
                     !KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
                     !PawnsFinder.AllCaravansAndTravelingTransportPods_Alive.Contains(pawn) && // ignore caravan/pods
-                    (pawn.ParentHolder == null || !(pawn.ParentHolder is CompTransporter)) && // ignore pawns in shuttle
+                    !IsLeavingInShuttleWithNoDestination(pawn) && // ignore pawns in shuttle leaving for what is most likely a quest
                     GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
                 {
                     if (PawnComponentsUtility.HasSpawnedComponents(pawn))
@@ -177,13 +198,19 @@ namespace Kyrun.Reunion
 
 
         // Draw the Reunion drop down widget
-        [HarmonyPatch(typeof(Page_ConfigureStartingPawns), "DrawPortraitArea")]
-        [HarmonyPatch(new Type[] { typeof(Rect) })]
-        internal static class Page_ConfigureStartingPawns_DrawPortraitArea
+        [HarmonyPatch(typeof(StartingPawnUtility), "DrawPortraitArea")]
+        [HarmonyPatch(new Type[] { typeof(Rect), typeof(int), typeof(bool), typeof(bool) })]
+        internal static class StartingPawnUtility_DrawPortraitArea
         {
-            static void Postfix(Page_ConfigureStartingPawns __instance, Rect rect, ref Pawn ___curPawn)
+            static void Postfix(Rect rect, ref int pawnIndex, ref bool renderClothes, ref bool renderHeadgear)
             {
-                Pawn pawn = ___curPawn;
+                List<Pawn> StartingAndOptionalPawns = Find.GameInitData.startingAndOptionalPawns;
+                if (pawnIndex >= StartingAndOptionalPawns.Count)
+                {
+                    return;
+                }
+
+                Pawn pawn = StartingAndOptionalPawns[pawnIndex];
 
                 if (pawn == null || pawn.story == null || pawn.story.traits == null) return;
 
