@@ -214,9 +214,9 @@ namespace Kyrun.Reunion
 
                 if (pawn == null || pawn.story == null || pawn.story.traits == null) return;
 
-                // This will place the widget besides the "Traits" header
+                // This will place the widget besides the pawn portrait
                 Widgets.BeginGroup(rect);
-                Rect buttonRect = new Rect(90, 232, 150f, 20f);
+                Rect buttonRect = new Rect(435, 0, 150f, 20f);
 
                 string currLabel = GetReunionTraitDisplayName(GetReunionTrait(pawn));
 
