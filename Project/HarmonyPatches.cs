@@ -79,7 +79,7 @@ namespace Kyrun.Reunion
                     !pawn.Dead && // ignore dead pawns
                     !pawn.Destroyed && // ignore pawns destroyed for whatever reason
                     !KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
-                    !PawnsFinder.AllCaravansAndTravelingTransportPods_Alive.Contains(pawn) && // ignore caravan/pods
+                    !PawnsFinder.AllCaravansAndTravellingTransporters_Alive.Contains(pawn) && // ignore caravan/pods
                     !IsLeavingInShuttleWithNoDestination(pawn) && // ignore pawns in shuttle leaving for what is most likely a quest
                     GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
                 {
