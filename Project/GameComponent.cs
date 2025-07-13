@@ -127,7 +127,7 @@ namespace Kyrun.Reunion
             // This means that starting pawns (as opposed to "left behind" pawns) with the Ally trait
             // will be given the Reunion treatment if they are ever lost (passed to World pool).
             // This feature is not documented but if you are reading this comment off the repo, this is your reward. :)
-            RegisterReunionPawnsFromList(PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction, (pawn) =>
+            RegisterReunionPawnsFromList(PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive_OfPlayerFaction, (pawn) =>
             {
                 if (!ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
                 {
@@ -377,7 +377,7 @@ namespace Kyrun.Reunion
             // add the rest of the allowed events if more than 1 Colonist
             if (Settings.enableHarderEventsWhenSolo || // if option for harder solo is turned on
                 listAllowedEvents.Count == 0 || // or the player has turned off both the one-colonist events
-                PawnsFinder.AllMapsCaravansAndTravelingTransportPods_Alive_OfPlayerFaction.Count > 1)  // this is the actual condition
+                PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive_OfPlayerFaction.Count > 1)  // this is the actual condition
             {
                 foreach (Settings.Event eventType in Enum.GetValues(typeof(Settings.Event)))
                 {

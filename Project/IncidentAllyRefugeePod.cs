@@ -36,7 +36,7 @@ namespace Kyrun.Reunion
 
 			Find.LetterStack.ReceiveLetter(baseLetterLabel, baseLetterText, def.letterDef, new LookTargets(pawn));
 
-			ActiveDropPodInfo activeDropPodInfo = new ActiveDropPodInfo();
+			ActiveTransporterInfo activeDropPodInfo = new ActiveTransporterInfo();
 			activeDropPodInfo.innerContainer.TryAddRangeOrTransfer(things, true, false);
 			activeDropPodInfo.openDelay = 180;
 			activeDropPodInfo.leaveSlag = true;
