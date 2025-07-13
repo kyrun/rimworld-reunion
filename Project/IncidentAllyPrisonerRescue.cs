@@ -7,62 +7,62 @@ using Verse.Grammar;
 
 namespace Kyrun.Reunion
 {
-	public static class IncidentAllyPrisonerRescue
-	{
-		public static bool Do()
-		{
-			var root = DefDatabase<QuestScriptDef>.GetNamed("Reunion_PrisonerRescue");
-			var points = StorytellerUtility.DefaultThreatPointsNow(Current.Game.AnyPlayerHomeMap);
-			QuestUtility.SendLetterQuestAvailable(QuestUtility.GenerateQuestAndMakeAvailable(root, points));
+    public static class IncidentAllyPrisonerRescue
+    {
+        public static bool Do()
+        {
+            var root = DefDatabase<QuestScriptDef>.GetNamed("Reunion_PrisonerRescue");
+            var points = StorytellerUtility.DefaultThreatPointsNow(Current.Game.AnyPlayerHomeMap);
+            QuestUtility.SendLetterQuestAvailable(QuestUtility.GenerateQuestAndMakeAvailable(root, points));
 
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 
-	public class SitePartWorker_PrisonerRescue : RimWorld.Planet.SitePartWorker_PrisonerWillingToJoin
-	{
-		public override void Notify_GeneratedByQuestGen(SitePart part, Slate slate, List<Rule> outExtraDescriptionRules, Dictionary<string, string> outExtraDescriptionConstants)
-		{
-			// Duplicate code so modularize in Util
-			Util.SitePartWorker_Base_Notify_GeneratedByQuestGen(part, outExtraDescriptionRules, outExtraDescriptionConstants);
+    public class SitePartWorker_PrisonerRescue : RimWorld.Planet.SitePartWorker_PrisonerWillingToJoin
+    {
+        public override void Notify_GeneratedByQuestGen(SitePart part, Slate slate, List<Rule> outExtraDescriptionRules, Dictionary<string, string> outExtraDescriptionConstants)
+        {
+            // Duplicate code so modularize in Util
+            Util.SitePartWorker_Base_Notify_GeneratedByQuestGen(part, outExtraDescriptionRules, outExtraDescriptionConstants);
 
-			// Replaces PrisonerWillingToJoinQuestUtility.GeneratePrisoner
-			Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            // Replaces PrisonerWillingToJoinQuestUtility.GeneratePrisoner
+            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
             if (pawn == null)
             {
                 return;
             }
 
             pawn.guest.SetGuestStatus(part.site.Faction, GuestStatus.Prisoner);
-			Util.DressPawnIfCold(pawn, part.site.Tile);
+            Util.DressPawnIfCold(pawn, part.site.Tile);
 
-			part.things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
-			part.things.TryAdd(pawn, true);
-			string text;
-			PawnRelationUtility.Notify_PawnsSeenByPlayer(Gen.YieldSingle<Pawn>(pawn), out text, true, false);
-			outExtraDescriptionRules.AddRange(GrammarUtility.RulesForPawn("prisoner", pawn, outExtraDescriptionConstants, true, true));
-			string output;
-			if (!text.NullOrEmpty())
-			{
-				output = "\n\n" + "PawnHasTheseRelationshipsWithColonists".Translate(pawn.LabelShort, pawn) + "\n\n" + text;
-			}
-			else
-			{
-				output = "";
-			}
-			outExtraDescriptionRules.Add(new Rule_String("prisonerFullRelationInfo", output));
-		}
+            part.things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
+            part.things.TryAdd(pawn, true);
+            string text;
+            PawnRelationUtility.Notify_PawnsSeenByPlayer(Gen.YieldSingle<Pawn>(pawn), out text, true, false);
+            outExtraDescriptionRules.AddRange(GrammarUtility.RulesForPawn("prisoner", pawn, outExtraDescriptionConstants, true, true));
+            string output;
+            if (!text.NullOrEmpty())
+            {
+                output = "\n\n" + "PawnHasTheseRelationshipsWithColonists".Translate(pawn.LabelShort, pawn) + "\n\n" + text;
+            }
+            else
+            {
+                output = "";
+            }
+            outExtraDescriptionRules.Add(new Rule_String("prisonerFullRelationInfo", output));
+        }
 
-		public override void PostMapGenerate(Map map)
-		{
-			base.PostMapGenerate(map);
-			GameComponent.FlagNextEventReadyForScheduling();
-		}
+        public override void PostMapGenerate(Map map)
+        {
+            base.PostMapGenerate(map);
+            GameComponent.FlagNextEventReadyForScheduling();
+        }
 
-		public override void PostDestroy(SitePart sitePart)
-		{
-			base.PostDestroy(sitePart);
-			Util.OnPostDestroyReschedule(sitePart);
-		}
-	}
+        public override void PostDestroy(SitePart sitePart)
+        {
+            base.PostDestroy(sitePart);
+            Util.OnPostDestroyReschedule(sitePart);
+        }
+    }
 }

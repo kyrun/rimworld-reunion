@@ -239,11 +239,11 @@ namespace Kyrun.Reunion
         }
 
 
-		public static void SetupSpawn(Pawn pawn)
-		{
-			ListAllyAvailable.Remove(pawn);
+        public static void SetupSpawn(Pawn pawn)
+        {
+            ListAllyAvailable.Remove(pawn);
             ListAllySpawned.Add(pawn.GetUniqueLoadID());
-			pawn.SetFactionDirect(null); // remove faction, if any
+            pawn.SetFactionDirect(null); // remove faction, if any
 
             if (Find.TickManager != null && pawn != null && pawn.ageTracker != null)
             {
@@ -268,7 +268,7 @@ namespace Kyrun.Reunion
             }
 
             pawn.workSettings.EnableAndInitializeIfNotAlreadyInitialized(); // prevent some error which I don't yet understand
-		}
+        }
 
 
         public static void ReturnToAvailable(Pawn pawn)
