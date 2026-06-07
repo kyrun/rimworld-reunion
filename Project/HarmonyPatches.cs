@@ -197,28 +197,33 @@ namespace Kyrun.Reunion
         }
 
 
-        // Draw the Reunion drop down widget
-        [HarmonyPatch(typeof(StartingPawnUtility), "DrawPortraitArea")]
-        [HarmonyPatch(new Type[] { typeof(Rect), typeof(int), typeof(bool), typeof(bool) })]
-        internal static class StartingPawnUtility_DrawPortraitArea
+        // Draw the Reunion dropdown widget to the left of the Randomize button
+        [HarmonyPatch(typeof(CharacterCardUtility), "DrawCharacterCard")]
+        [HarmonyPatch(new Type[] { typeof(Rect), typeof(Pawn), typeof(Action), typeof(Rect), typeof(bool) })]
+        internal static class CharacterCardUtility_DrawCharacterCard
         {
-            static void Postfix(Rect rect, ref int pawnIndex, ref bool renderClothes, ref bool renderHeadgear)
+            static void Postfix(Rect rect, ref Pawn pawn, Action randomizeCallback, Rect creationRect, bool showName)
             {
-                List<Pawn> StartingAndOptionalPawns = Find.GameInitData.startingAndOptionalPawns;
-                if (pawnIndex >= StartingAndOptionalPawns.Count)
-                {
-                    return;
-                }
+                // If the Randomize button exists, this should be the Character Creation screen.
+                // See CharacterCardUtility::DrawCharacterCard line 59.
+                if (randomizeCallback == null || pawn == null) return;
 
-                Pawn pawn = StartingAndOptionalPawns[pawnIndex];
+                Widgets.BeginGroup(creationRect);
 
-                if (pawn == null || pawn.story == null || pawn.story.traits == null) return;
-
-                // This will place the widget besides the "Traits" header
-                Widgets.BeginGroup(rect);
-                Rect buttonRect = new Rect(90, 232, 150f, 20f);
+                const float CONTAINER_PADDING = 6f;
+                const float RANDOM_BTN_W = 200f;
+                const float RANDOM_BTN_H = 30f;
+                // This is identical to the Randomize button.
+                // See CharacterCardUtility::DrawCharacterCard line 120.
+                Rect buttonRect = new Rect(creationRect.width - RANDOM_BTN_W - CONTAINER_PADDING, CONTAINER_PADDING, RANDOM_BTN_W, RANDOM_BTN_H);
 
                 string currLabel = GetReunionTraitDisplayName(GetReunionTrait(pawn));
+                const float PADDING = 24f; // arbitrary
+                float dropdownButtonW = Text.CalcSize(currLabel).x + PADDING;
+
+                // HACK: offset left of Randomize button and change to new width.
+                buttonRect.x -= (dropdownButtonW + CONTAINER_PADDING + CONTAINER_PADDING);
+                buttonRect.width = dropdownButtonW;
 
                 Widgets.Dropdown<Pawn, Trait>(buttonRect, pawn,
                     GetReunionTrait,
