@@ -11,9 +11,19 @@ namespace Kyrun.Reunion
     {
         public static bool Do()
         {
+            Map map = Current.Game.AnyPlayerHomeMap;
+
+            if (map == null)
+            {
+                Util.Warn("Cannot start Refugee Chased event: no player home map available.");
+                return false;
+            }
+
             var root = DefDatabase<QuestScriptDef>.GetNamed("Reunion_AllyChased");
-            var points = StorytellerUtility.DefaultThreatPointsNow(Current.Game.AnyPlayerHomeMap);
-            QuestUtility.SendLetterQuestAvailable(QuestUtility.GenerateQuestAndMakeAvailable(root, points));
+            var points = StorytellerUtility.DefaultThreatPointsNow(map);
+
+            QuestUtility.SendLetterQuestAvailable(
+                QuestUtility.GenerateQuestAndMakeAvailable(root, points));
 
             return true;
         }
@@ -58,41 +68,40 @@ namespace Kyrun.Reunion
 
     }
 
-    public class IncidentAllyChased_PawnsArrive : QuestNode_PawnsArrive
+    public class IncidentAllyChased_EnsureMap : QuestNode
     {
         protected override void RunInt()
         {
             Slate slate = QuestGen.slate;
-            PawnsArrivalModeDef pawnsArrivalModeDef = this.arrivalMode.GetValue(slate) ?? PawnsArrivalModeDefOf.EdgeWalkIn;
 
-            // this line is the only thing changed (we are using custom QuestPart)
-            var pawnsArrive = new Kyrun.Reunion.QuestPart_PawnsArrive();
+            // Keep the map already selected by QuestNode_GetMap.
+            if (slate.Get<Map>("map", null, false) != null)
+            {
+                return;
+            }
 
-            pawnsArrive.inSignal = (QuestGenUtility.HardcodedSignalWithQuestID(this.inSignal.GetValue(slate)) ?? QuestGen.slate.Get<string>("inSignal", null, false));
-            pawnsArrive.pawns.AddRange(this.pawns.GetValue(slate));
-            pawnsArrive.arrivalMode = pawnsArrivalModeDef;
-            pawnsArrive.joinPlayer = this.joinPlayer.GetValue(slate);
-            pawnsArrive.mapParent = QuestGen.slate.Get<Map>("map", null, false).Parent;
-            if (pawnsArrivalModeDef.walkIn)
+            // Fall back to a player home map if QuestNode_GetMap
+            // could not find one.
+            Map map = Current.Game.AnyPlayerHomeMap;
+
+            if (map == null)
             {
-                pawnsArrive.spawnNear = (this.walkInSpot.GetValue(slate) ?? (QuestGen.slate.Get<IntVec3?>("walkInSpot", null, false) ?? IntVec3.Invalid));
+                Util.Error("[Reunion] Cannot generate Refugee Chased quest: no player home map available.");
+                return;
             }
-            if (!this.customLetterLabel.GetValue(slate).NullOrEmpty() || this.customLetterLabelRules.GetValue(slate) != null)
-            {
-                QuestGen.AddTextRequest("root", delegate (string x)
-                {
-                    pawnsArrive.customLetterLabel = x;
-                }, QuestGenUtility.MergeRules(this.customLetterLabelRules.GetValue(slate), this.customLetterLabel.GetValue(slate), "root"));
-            }
-            if (!this.customLetterText.GetValue(slate).NullOrEmpty() || this.customLetterTextRules.GetValue(slate) != null)
-            {
-                QuestGen.AddTextRequest("root", delegate (string x)
-                {
-                    pawnsArrive.customLetterText = x;
-                }, QuestGenUtility.MergeRules(this.customLetterTextRules.GetValue(slate), this.customLetterText.GetValue(slate), "root"));
-            }
-            QuestGen.quest.AddPart(pawnsArrive);
+
+            slate.Set<Map>("map", map, false);
         }
+
+        protected override bool TestRunInt(Slate slate)
+        {
+            return slate.Get<Map>("map", null, false) != null || Current.Game.AnyPlayerHomeMap != null;
+        }
+    }
+
+    public class IncidentAllyChased_PawnsArrive : QuestNode_PawnsArrive
+    {
+        // Intentionally empty. Used by Harmony transpiler.
     }
 
     public class QuestPart_PawnsArrive : RimWorld.QuestPart_PawnsArrive

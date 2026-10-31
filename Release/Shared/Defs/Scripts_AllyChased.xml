@@ -76,6 +76,8 @@
         </li>
         <li Class="QuestNode_GetMap" />
 
+        <li Class="Kyrun.Reunion.IncidentAllyChased_EnsureMap" />
+
         <!-- Get a walk-in spot so joiner and raid come from the same spot -->
         <li Class="QuestNode_GetWalkInSpot" /> 
 

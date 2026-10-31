@@ -4,7 +4,7 @@ using UnityEngine;
 using RimWorld;
 using Verse;
 using HarmonyLib;
-using RimWorld.Planet;
+using RimWorld.QuestGen;
 
 namespace Kyrun.Reunion
 {
@@ -198,6 +198,69 @@ namespace Kyrun.Reunion
                     false);
 
                 Widgets.EndGroup();
+            }
+        }
+
+
+        // Use Reunion's custom QuestPart_PawnsArrive for the Refugee Chased quest.
+        [HarmonyPatch(typeof(QuestNode_PawnsArrive), "RunInt")]
+        static class QuestNode_PawnsArrive_RunInt
+        {
+            static IEnumerable<CodeInstruction> Transpiler(
+                IEnumerable<CodeInstruction> instructions)
+            {
+                var codes = new List<CodeInstruction>(instructions);
+
+                var constructor = AccessTools.Constructor(
+                    typeof(RimWorld.QuestPart_PawnsArrive));
+
+                var factory = AccessTools.Method(
+                    typeof(QuestNode_PawnsArrive_RunInt),
+                    nameof(CreatePawnsArrive));
+
+                int matches = 0;
+
+                for (int i = 0; i < codes.Count; i++)
+                {
+                    if (codes[i].opcode == System.Reflection.Emit.OpCodes.Newobj &&
+                        Equals(codes[i].operand, constructor))
+                    {
+                        // Preserve labels and exception block metadata.
+                        var replacement = new CodeInstruction(
+                            System.Reflection.Emit.OpCodes.Ldarg_0);
+
+                        replacement.labels.AddRange(codes[i].labels);
+                        replacement.blocks.AddRange(codes[i].blocks);
+
+                        codes[i] = replacement;
+
+                        codes.Insert(i + 1, new CodeInstruction(
+                            System.Reflection.Emit.OpCodes.Call, factory));
+
+                        matches++;
+                        i++;
+                    }
+                }
+
+                if (matches != 1)
+                {
+                    Log.Error(
+                        "[Reunion] Failed to patch QuestNode_PawnsArrive.RunInt: " +
+                        "expected exactly one QuestPart_PawnsArrive constructor, found " +
+                        matches + ".");
+                }
+
+                return codes;
+            }
+
+            static RimWorld.QuestPart_PawnsArrive CreatePawnsArrive(QuestNode_PawnsArrive node)
+            {
+                if (node is IncidentAllyChased_PawnsArrive)
+                {
+                    return new Kyrun.Reunion.QuestPart_PawnsArrive();
+                }
+
+                return new RimWorld.QuestPart_PawnsArrive();
             }
         }
     }
