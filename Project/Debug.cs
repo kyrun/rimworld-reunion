@@ -18,7 +18,7 @@ namespace Kyrun.Reunion
             allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void ForceStartReunionEvent()
         {
-            GameComponent.DecideAndDoEvent();
+            GameComponent.CurrentGame?.DecideAndDoEvent();
         }
 
         [DebugAction(category = CATEGORY,
@@ -30,18 +30,21 @@ namespace Kyrun.Reunion
             allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void MakeWorldPawnAlly()
         {
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return;
+
             List<DebugMenuOption> listDebugMenuOption = new List<DebugMenuOption>();
             Action<Pawn> actionPawn = delegate (Pawn p)
             {
                 if (p != null && p.story != null)
                 {
                     GameComponent.TryRemoveTrait(p);
-                    GameComponent.AddPawnToAvailableList(p);
+                    gameComponent.AddPawnToAvailableList(p);
                     Find.WorldPawns.RemovePawn(p);
                     Util.Msg("[DEBUG] " + p.Name + " has been removed from the World and added to the Ally list.");
-                    if (GameComponent.ListAllyAvailable.Count == 1) // list is not empty anymore, try to schedule a new event
+                    if (gameComponent.ListAllyAvailable.Count == 1) // list is not empty anymore, try to schedule a new event
                     {
-                        GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+                        gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
                     }
                 }
             };
@@ -70,7 +73,8 @@ namespace Kyrun.Reunion
             allowedGameStates = AllowedGameStates.PlayingOnMap)]
         private static void PrintAllyList()
         {
-            if (GameComponent.ListAllyAvailable.Count > 0)
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent != null && gameComponent.ListAllyAvailable.Count > 0)
             {
                 Util.PrintAllyList();
             }

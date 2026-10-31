@@ -17,11 +17,14 @@ namespace Kyrun.Reunion
 
     class GameComponent : Verse.GameComponent
     {
-        public static List<Pawn> ListAllyAvailable = new List<Pawn>();
-        public static List<string> ListAllySpawned = new List<string>();
+        public List<Pawn> ListAllyAvailable = new List<Pawn>();
+        public List<string> ListAllySpawned = new List<string>();
 
         // Variables
-        public static int NextEventTick = 0;
+        public int NextEventTick = 0;
+
+        // Resolve the component belonging to the currently active game.
+        public static GameComponent CurrentGame => Current.Game?.GetComponent<GameComponent>();
 
         // Trait-related
         public const string TRAIT_DEF_CHARACTER = "ReunionCharacter";
@@ -111,12 +114,8 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void InitOnNewGame()
+        public void InitOnNewGame()
         {
-            ListAllyAvailable.Clear();
-            ListAllySpawned.Clear();
-            NextEventTick = 0;
-
 #if TESTING
 			const int TOTAL = 5;
             Util.Warn("TESTING mode enabled. Generating " + TOTAL + " random pawns with Ally trait for Reunion events.");
@@ -132,7 +131,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void InitOnLoad()
+        public void InitOnLoad()
         {
             if (ListAllyAvailable == null) ListAllyAvailable = new List<Pawn>();
             if (ListAllySpawned == null) ListAllySpawned = new List<string>();
@@ -153,7 +152,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void PostInit()
+        public void PostInit()
         {
             // Check player's existing pawns with Ally trait and put into list for saving.
             // This means that starting pawns (as opposed to "left behind" pawns) with the Ally trait
@@ -206,7 +205,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void AddPawnToAvailableList(Pawn pawn)
+        public void AddPawnToAvailableList(Pawn pawn)
         {
             if (pawn != null && !pawn.Dead && !ListAllyAvailable.Contains(pawn))
             {
@@ -235,7 +234,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static Pawn GetRandomAllyForSpawning()
+        public Pawn GetRandomAllyForSpawning()
         {
             if (ListAllyAvailable.Count == 0)
             {
@@ -271,7 +270,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void SetupSpawn(Pawn pawn)
+        public void SetupSpawn(Pawn pawn)
         {
             ListAllyAvailable.Remove(pawn);
             ListAllySpawned.Add(pawn.GetUniqueLoadID());
@@ -303,7 +302,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void ReturnToAvailable(Pawn pawn)
+        public void ReturnToAvailable(Pawn pawn)
         {
             ListAllySpawned.Remove(pawn.GetUniqueLoadID());
 
@@ -332,13 +331,13 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void FlagNextEventReadyForScheduling()
+        public void FlagNextEventReadyForScheduling()
         {
             NextEventTick = 0;
         }
 
 
-        public static void TryScheduleNextEvent(ScheduleMode mode = ScheduleMode.Normal)
+        public void TryScheduleNextEvent(ScheduleMode mode = ScheduleMode.Normal)
         {
             if (ListAllyAvailable.Count == 0)
             {
@@ -383,7 +382,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void DecideAndDoEvent()
+        public void DecideAndDoEvent()
         {
             NextEventTick = -1; // stop next event from happening
 

@@ -14,7 +14,10 @@ namespace Kyrun.Reunion
                 return false;
             }
 
-            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return false;
+
+            Pawn pawn = gameComponent.GetRandomAllyForSpawning();
             if (pawn == null)
             {
                 return false;
@@ -29,7 +32,7 @@ namespace Kyrun.Reunion
 
             Find.LetterStack.ReceiveLetter(baseLetterLabel, baseLetterText, def.letterDef, new LookTargets(pawn));
 
-            GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+            gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
 
             return true;
         }

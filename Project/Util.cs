@@ -27,8 +27,11 @@ namespace Kyrun.Reunion
 
         public static void PrintAllyList()
         {
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return;
+
             var str = "";
-            foreach (var ally in GameComponent.ListAllyAvailable)
+            foreach (var ally in gameComponent.ListAllyAvailable)
             {
                 str += ally.Name + DELIMITER;
             }
@@ -38,9 +41,11 @@ namespace Kyrun.Reunion
 
         public static void PrintNextEventTimeRemaining()
         {
-            if (Prefs.DevMode)
+            GameComponent gameComponent = GameComponent.CurrentGame;
+
+            if (Prefs.DevMode && gameComponent != null && Find.TickManager != null)
             {
-                var diff = GameComponent.NextEventTick - Find.TickManager.TicksGame;
+                var diff = gameComponent.NextEventTick - Find.TickManager.TicksGame;
                 if (diff > 0)
                 {
                     Msg("Next event in " + ((float)diff / GenDate.TicksPerDay).ToString("0.00") + " days");
@@ -116,11 +121,14 @@ namespace Kyrun.Reunion
 
         public static void OnPostDestroyReschedule(SitePart sitePart)
         {
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return;
+
             // If recruited, will have been flagged on map generate: schedule will fire on DoRecruit
             // If abandoned but pawn alive, also will have been flagged on map generate: schedule will fire on PassToWorld
 
             // If quest failed without entering the map, flag here: schedule will fire on PassToWorld
-            if (GameComponent.NextEventTick == -1) GameComponent.FlagNextEventReadyForScheduling();
+            if (gameComponent.NextEventTick == -1) gameComponent.FlagNextEventReadyForScheduling();
 
             if (sitePart.things != null && sitePart.things.Any)
             {
@@ -128,13 +136,13 @@ namespace Kyrun.Reunion
                 // If pawn is dead on post destroy: schedule it HERE!
                 if (pawn.Dead)
                 {
-                    GameComponent.TryScheduleNextEvent();
+                    gameComponent.TryScheduleNextEvent();
                 }
             }
             // No "thing" in SitePart, pawn is recruited, or something else happened.
             // As mentioned above, if recruited, schedule will already have fired on DoRecruit.
             // If not recruited for whatever reason (likely dead, according to tests): schedule it HERE!
-            else if (GameComponent.NextEventTick == 0) GameComponent.TryScheduleNextEvent();
+            else if (gameComponent.NextEventTick == 0) gameComponent.TryScheduleNextEvent();
         }
     }
 }

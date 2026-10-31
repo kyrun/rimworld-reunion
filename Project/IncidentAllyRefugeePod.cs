@@ -15,7 +15,10 @@ namespace Kyrun.Reunion
     {
         public static bool Do()
         {
-            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return false;
+
+            Pawn pawn = gameComponent.GetRandomAllyForSpawning();
             if (pawn == null)
             {
                 return false;
@@ -42,7 +45,7 @@ namespace Kyrun.Reunion
             activeDropPodInfo.leaveSlag = true;
             DropPodUtility.MakeDropPodAt(intVec, map, activeDropPodInfo);
 
-            GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+            gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
             return true;
         }
     }
