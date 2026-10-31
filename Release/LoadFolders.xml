@@ -25,6 +25,9 @@
   </v1.6>
   <v1.7>
     <li>/</li>
+    <!-- Reuse the version-independent Reunion definitions until 1.7-specific
+         XML changes are required. Do not include the 1.6 assembly. -->
+    <li>1.6/Defs</li>
     <li>1.7</li>
   </v1.7>
 </loadFolders>

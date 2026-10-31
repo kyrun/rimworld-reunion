@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,6 +9,8 @@
     <RootNamespace>Kyrun.Reunion</RootNamespace>
     <AssemblyName>Reunion</AssemblyName>
     <TargetFramework>net10.0</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
     <LangVersion>latest</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -19,7 +21,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Release\1.7\Assemblies\</OutputPath>
+    <OutputPath>..\\Release\\1.7\\Assemblies\\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,7 +31,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Release\1.7\Assemblies\</OutputPath>
+    <OutputPath>..\\Release\\1.7\\Assemblies\\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -37,26 +39,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Update this package version when Krafs releases the official 1.7 reference package -->
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.*-*" />
-    <PackageReference Include="Lib.Harmony" Version="2.3.6" />
+    <!-- Pin the current 1.7 unstable reference build so local/CI builds are reproducible. -->
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.4990-unstable" />
+    <!-- Harmony is supplied at runtime by the Harmony mod; compile against it only. -->
+    <PackageReference Include="Lib.Harmony" Version="3.0.0-rc.3" ExcludeAssets="runtime" />
   </ItemGroup>
-  
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildLastTaskResult)' != 'false'">
-    <!-- 1. Safely create the destination path if missing -->
-    <MakeDir Directories="C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Reunion\1.7\Assemblies" />
-    
-    <!-- 2. Copy the DLL, tracking if it succeeds -->
-    <Copy SourceFiles="$(TargetDir)$(TargetName).dll" 
-          DestinationFolder="C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Reunion\1.7\Assemblies" 
-          SkipUnchangedFiles="true">
-      <Output TaskParameter="CopiedFiles" ItemName="SuccessfullyCopied" />
-    </Copy>
-          
-    <!-- 3. ONLY launch RimWorld if the file was successfully found and handled -->
-    <Exec Command="start steam://rungameid/294100" 
-          Condition="'@(SuccessfullyCopied)' != ''" />
+
+  <!-- Set RimWorldInstallDir (or the RIMWORLD_INSTALL_DIR environment variable)
+       to enable local deployment. A normal build does not depend on this path. -->
+  <PropertyGroup>
+    <RimWorldInstallDir Condition="'$(RimWorldInstallDir)' == '' and '$(RIMWORLD_INSTALL_DIR)' != ''">$(RIMWORLD_INSTALL_DIR)</RimWorldInstallDir>
+  </PropertyGroup>
+
+  <Target Name="DeployToRimWorld" AfterTargets="Build" Condition="'$(RimWorldInstallDir)' != ''">
+    <PropertyGroup>
+      <ReunionAssembliesDirectory>$(RimWorldInstallDir)\\Mods\\Reunion\\1.7\\Assemblies</ReunionAssembliesDirectory>
+    </PropertyGroup>
+    <MakeDir Directories="$(ReunionAssembliesDirectory)" />
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(ReunionAssembliesDirectory)"
+          SkipUnchangedFiles="true" />
   </Target>
-
-
 </Project>

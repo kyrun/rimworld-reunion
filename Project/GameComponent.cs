@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
@@ -76,6 +76,38 @@ namespace Kyrun.Reunion
         public GameComponent(Game game) : base()
         {
             Settings = LoadedModManager.GetMod<Mod>().GetSettings<Settings>();
+        }
+
+        // Use the GameComponent lifecycle instead of patching Game.InitNewGame
+        // and Game.LoadGame. PostInit runs after the new-game/load callback,
+        // when the game state has been restored or generated.
+        public override void StartedNewGame()
+        {
+            base.StartedNewGame();
+
+            InitOnNewGame();
+            PostInit();
+        }
+
+        public override void LoadedGame()
+        {
+            base.LoadedGame();
+
+            InitOnLoad();
+            PostInit();
+        }
+
+        // GameComponentTick is already called by the game each simulation tick.
+        // This replaces the global Harmony patch on TickManager.DoSingleTick.
+        public override void GameComponentTick()
+        {
+            base.GameComponentTick();
+
+            if (NextEventTick <= 0 || Find.TickManager == null)
+                return;
+
+            if (Find.TickManager.TicksGame >= NextEventTick)
+                DecideAndDoEvent();
         }
 
 

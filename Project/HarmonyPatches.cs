@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using RimWorld;
@@ -10,44 +10,6 @@ namespace Kyrun.Reunion
 {
     static class HarmonyPatches
     {
-        // Called on new game
-        [HarmonyPatch(typeof(Game), "InitNewGame")]
-        internal static class Verse_Game_InitNewGame
-        {
-            static void Postfix()
-            {
-                GameComponent.InitOnNewGame();
-                GameComponent.PostInit();
-            }
-        }
-
-
-        // Called on load game
-        [HarmonyPatch(typeof(Game), "LoadGame")]
-        internal static class Verse_Game_LoadGame
-        {
-            static void Postfix()
-            {
-                GameComponent.InitOnLoad();
-                GameComponent.PostInit();
-            }
-        }
-
-
-        // Tick for this mod
-        [HarmonyPatch(typeof(TickManager), "DoSingleTick")]
-        internal static class TickManager_DoSingleTick
-        {
-            static void Postfix(TickManager __instance)
-            {
-                if (GameComponent.NextEventTick > 0 && __instance.TicksGame >= GameComponent.NextEventTick)
-                {
-                    GameComponent.DecideAndDoEvent();
-                }
-            }
-        }
-
-
         // Prevent Reunion pawns from going to World pool
         [HarmonyPatch(typeof(RimWorld.Planet.WorldPawns), "PassToWorld")]
         [HarmonyPatch(new Type[] { typeof(Pawn), typeof(RimWorld.Planet.PawnDiscardDecideMode) })]
