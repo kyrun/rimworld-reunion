@@ -423,7 +423,14 @@ namespace Kyrun.Reunion
             if (listAllowedEvents.Count > 0)
             {
                 var eventToDo = listAllowedEvents[Random.Range(0, listAllowedEvents.Count)];
-                Settings.EventAction[eventToDo].Invoke();
+                bool eventStarted = Settings.EventAction[eventToDo].Invoke();
+
+                if (!eventStarted)
+                {
+                    Util.Warn("Failed to start Reunion event: " + eventToDo + ". Event timer restarted.");
+                    FlagNextEventReadyForScheduling();
+                    TryScheduleNextEvent();
+                }
             }
             else
             {
