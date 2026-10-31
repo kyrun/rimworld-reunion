@@ -11,7 +11,7 @@ namespace Kyrun.Reunion
     {
         public static bool Do()
         {
-            Map map = Current.Game.AnyPlayerHomeMap;
+            Map map = Current.Game?.AnyPlayerHomeMap;
 
             if (map == null)
             {
@@ -22,9 +22,19 @@ namespace Kyrun.Reunion
             var root = DefDatabase<QuestScriptDef>.GetNamed("Reunion_AllyChased");
             var points = StorytellerUtility.DefaultThreatPointsNow(map);
 
-            QuestUtility.SendLetterQuestAvailable(
-                QuestUtility.GenerateQuestAndMakeAvailable(root, points));
+            Slate slate = new Slate();
+            slate.Set<Map>("map", map);
+            slate.Set("points", points);
 
+            Quest quest = QuestUtility.GenerateQuestAndMakeAvailable(root, slate);
+
+            if (quest == null)
+            {
+                Util.Warn("Failed to generate Refugee Chased quest.");
+                return false;
+            }
+
+            QuestUtility.SendLetterQuestAvailable(quest);
             return true;
         }
     }
@@ -65,38 +75,6 @@ namespace Kyrun.Reunion
 
         [NoTranslate]
         public SlateRef<string> addToList;
-
-    }
-
-    public class IncidentAllyChased_EnsureMap : QuestNode
-    {
-        protected override void RunInt()
-        {
-            Slate slate = QuestGen.slate;
-
-            // Keep the map already selected by QuestNode_GetMap.
-            if (slate.Get<Map>("map", null, false) != null)
-            {
-                return;
-            }
-
-            // Fall back to a player home map if QuestNode_GetMap
-            // could not find one.
-            Map map = Current.Game.AnyPlayerHomeMap;
-
-            if (map == null)
-            {
-                Util.Error("[Reunion] Cannot generate Refugee Chased quest: no player home map available.");
-                return;
-            }
-
-            slate.Set<Map>("map", map, false);
-        }
-
-        protected override bool TestRunInt(Slate slate)
-        {
-            return slate.Get<Map>("map", null, false) != null || Current.Game.AnyPlayerHomeMap != null;
-        }
     }
 
     public class IncidentAllyChased_PawnsArrive : QuestNode_PawnsArrive
@@ -125,7 +103,6 @@ namespace Kyrun.Reunion
             if (quest.State == QuestState.EndedOfferExpired) saveByReference = true;
             else GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
         }
-
 
         public override void ExposeData()
         {

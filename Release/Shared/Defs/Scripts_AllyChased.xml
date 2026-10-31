@@ -74,12 +74,17 @@
         <li Class="QuestNode_SubScript">
           <def>Util_RandomizePointsChallengeRating</def>
         </li>
-        <li Class="QuestNode_GetMap" />
 
-        <li Class="Kyrun.Reunion.IncidentAllyChased_EnsureMap" />
+        <!-- Fail the quest if its original map is removed -->
+        <li Class="QuestNode_End">
+          <inSignal>$map.MapRemoved</inSignal>
+          <outcome>Fail</outcome>
+          <signalListenMode>OngoingOrNotYetAccepted</signalListenMode>
+          <sendStandardLetter>true</sendStandardLetter>
+        </li>
 
         <!-- Get a walk-in spot so joiner and raid come from the same spot -->
-        <li Class="QuestNode_GetWalkInSpot" /> 
+        <li Class="QuestNode_GetWalkInSpot" />
 
         <!-- Get raider faction -->
         <li Class="QuestNode_GetFaction">
@@ -88,7 +93,7 @@
           <storeAs>enemyFaction</storeAs>
         </li>
 
-         <!-- Charity on accept -->
+        <!-- Charity on accept -->
         <li Class="QuestNode_RecordHistoryEvent" MayRequire="Ludeon.RimWorld.Ideology">
           <historyDef>CharityFulfilled_ThreatReward_Joiner</historyDef>
         </li>
