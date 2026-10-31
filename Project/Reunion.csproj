@@ -8,41 +8,55 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Kyrun.Reunion</RootNamespace>
     <AssemblyName>Reunion</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Release\1.6\Assemblies\</OutputPath>
+    <OutputPath>..\Release\1.7\Assemblies\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Release\1.6\Assemblies\</OutputPath>
+    <OutputPath>..\Release\1.7\Assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4518" />
+    <!-- Update this package version when Krafs releases the official 1.7 reference package -->
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.*-*" />
     <PackageReference Include="Lib.Harmony" Version="2.3.6" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(SolutionDir)$(Configuration)&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Reunion&quot; /s /i /y&#xD;&#xA;start steam://rungameid/294100" />
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildLastTaskResult)' != 'false'">
+    <!-- 1. Safely create the destination path if missing -->
+    <MakeDir Directories="C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Reunion\1.7\Assemblies" />
+    
+    <!-- 2. Copy the DLL, tracking if it succeeds -->
+    <Copy SourceFiles="$(TargetDir)$(TargetName).dll" 
+          DestinationFolder="C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Reunion\1.7\Assemblies" 
+          SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="SuccessfullyCopied" />
+    </Copy>
+          
+    <!-- 3. ONLY launch RimWorld if the file was successfully found and handled -->
+    <Exec Command="start steam://rungameid/294100" 
+          Condition="'@(SuccessfullyCopied)' != ''" />
   </Target>
+
+
 </Project>
