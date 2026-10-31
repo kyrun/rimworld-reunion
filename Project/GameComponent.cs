@@ -116,9 +116,10 @@ namespace Kyrun.Reunion
             ListAllyAvailable.Clear();
             ListAllySpawned.Clear();
             NextEventTick = 0;
+
 #if TESTING
-			/* */
 			const int TOTAL = 5;
+            Util.Warn("TESTING mode enabled. Generating " + TOTAL + " random pawns with Ally trait for Reunion events.");
 			for (int i = 0; i < TOTAL; ++i)
 			{
 				var pgr = new PawnGenerationRequest(PawnKindDef.Named("SpaceRefugee"), null,
@@ -127,7 +128,6 @@ namespace Kyrun.Reunion
 				newPawn.Name = NameTriple.FromString("ReunionPawn" + i);
                 AddPawnToAvailableList(newPawn);
 			}
-			/* */
 #endif
         }
 
@@ -390,6 +390,9 @@ namespace Kyrun.Reunion
             if (ListAllyAvailable.Count <= 0) // no more allies
             {
                 Util.Error("No available Ally pawns, event should not have fired!");
+
+                FlagNextEventReadyForScheduling();
+
                 return;
             }
             if (Current.Game.AnyPlayerHomeMap == null) // no map
