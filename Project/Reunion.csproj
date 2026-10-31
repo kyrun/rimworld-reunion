@@ -56,18 +56,6 @@
     <PackageReference Include="Lib.Harmony.Ref" Version="3.*-*" />
   </ItemGroup>
 
-
-  <!-- DEVELOPMENT SETTINGS -->
-  <PropertyGroup>
-    <!-- Default Steam installation directory -->
-    <RimWorldInstallDir>C:\Program Files (x86)\Steam\steamapps\common\RimWorld</RimWorldInstallDir>
-
-    <!-- Automatically deploy and launch after a successful Release build -->
-    <DeployToRimWorld Condition="'$(DeployToRimWorld)' == ''">true</DeployToRimWorld>
-    <LaunchRimWorld Condition="'$(LaunchRimWorld)' == ''">true</LaunchRimWorld>
-  </PropertyGroup>
-
-
   <!-- POST-BUILD: DEPLOY AND LAUNCH -->
   <Target Name="DeployAndLaunchRimWorld" AfterTargets="Build"
           Condition="'$(Configuration)' == 'Release'">
