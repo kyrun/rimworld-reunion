@@ -84,6 +84,27 @@ namespace Kyrun.Reunion
 
     public class QuestPart_PawnsArrive : RimWorld.QuestPart_PawnsArrive
     {
+        public override void Notify_QuestSignalReceived(Signal signal)
+        {
+            base.Notify_QuestSignalReceived(signal);
+
+            // Only handle the MapRemoved signal for this quest's target map.
+            if (!signal.tag.EndsWith(".MapRemoved", StringComparison.Ordinal))
+                return;
+
+            if (!signal.args.TryGetArg("SUBJECT", out MapParent subject) ||
+                subject != mapParent)
+                return;
+
+            // The pawn's faction changes to Player when the arrival process runs.
+            bool allySpawned = pawns.Exists(pawn =>
+                pawn != null && pawn.Faction == Faction.OfPlayer);
+
+            quest.End(
+                allySpawned ? QuestEndOutcome.Success : QuestEndOutcome.Fail,
+                sendLetter: true);
+        }
+
         public override void Cleanup()
         {
             base.Cleanup(); // there's nothing in the base call (at the moment), but just in case in the future there's something

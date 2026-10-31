@@ -75,14 +75,6 @@
           <def>Util_RandomizePointsChallengeRating</def>
         </li>
 
-        <!-- Fail the quest if its original map is removed -->
-        <li Class="QuestNode_End">
-          <inSignal>$map.MapRemoved</inSignal>
-          <outcome>Fail</outcome>
-          <signalListenMode>OngoingOrNotYetAccepted</signalListenMode>
-          <sendStandardLetter>true</sendStandardLetter>
-        </li>
-
         <!-- Get a walk-in spot so joiner and raid come from the same spot -->
         <li Class="QuestNode_GetWalkInSpot" />
 

@@ -257,7 +257,10 @@ namespace Kyrun.Reunion
             {
                 if (node is IncidentAllyChased_PawnsArrive)
                 {
-                    return new Kyrun.Reunion.QuestPart_PawnsArrive();
+                    return new Kyrun.Reunion.QuestPart_PawnsArrive
+                    {
+                        signalListenMode = QuestPart.SignalListenMode.OngoingOrNotYetAccepted
+                    };
                 }
 
                 return new RimWorld.QuestPart_PawnsArrive();
