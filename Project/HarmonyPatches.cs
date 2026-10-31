@@ -257,7 +257,13 @@ namespace Kyrun.Reunion
             {
                 if (node is IncidentAllyChased_PawnsArrive)
                 {
-                    return new Kyrun.Reunion.QuestPart_PawnsArrive();
+                    // Register the selected map as a target for its MapRemoved signal.
+                    QuestGenUtility.HardcodedSignalWithQuestID("map.MapRemoved");
+
+                    return new Kyrun.Reunion.QuestPart_PawnsArrive
+                    {
+                        signalListenMode = QuestPart.SignalListenMode.OngoingOrNotYetAccepted
+                    };
                 }
 
                 return new RimWorld.QuestPart_PawnsArrive();
