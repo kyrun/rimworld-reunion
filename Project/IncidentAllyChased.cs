@@ -43,7 +43,7 @@ namespace Kyrun.Reunion
     {
         protected override void RunInt()
         {
-            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning();
             if (pawn == null)
             {
                 return;
@@ -109,20 +109,23 @@ namespace Kyrun.Reunion
         {
             base.Cleanup(); // there's nothing in the base call (at the moment), but just in case in the future there's something
 
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return;
+
             // get pawns that spawned from Reunion
             var listToReturn = pawns.FindAll((pawn) =>
             {
-                return pawn.Faction != Faction.OfPlayer && GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID());
+                return pawn.Faction != Faction.OfPlayer && gameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID());
             });
 
-            GameComponent.FlagNextEventReadyForScheduling();
+            gameComponent.FlagNextEventReadyForScheduling();
             foreach (var pawn in listToReturn)
             {
-                GameComponent.ReturnToAvailable(pawn);
+                gameComponent.ReturnToAvailable(pawn);
             }
 
             if (quest.State == QuestState.EndedOfferExpired) saveByReference = true;
-            else GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+            else gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
         }
 
         public override void ExposeData()

@@ -37,20 +37,23 @@ namespace Kyrun.Reunion
 
             static bool Prefix(RimWorld.Planet.WorldPawns __instance, ref Pawn pawn, ref RimWorld.Planet.PawnDiscardDecideMode discardMode)
             {
-                if (Current.Game.Info.RealPlayTimeInteracting > 0 && // prevent this from firing when the game hasn't even started proper
+                GameComponent gameComponent = GameComponent.CurrentGame;
+
+                if (gameComponent != null &&
+                    Current.Game.Info.RealPlayTimeInteracting > 0 && // prevent this from firing when the game hasn't even started proper
                     !pawn.Dead && // ignore dead pawns
                     !pawn.Destroyed && // ignore pawns destroyed for whatever reason
                     !KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
                     !PawnsFinder.AllCaravansAndTravellingTransporters_Alive.Contains(pawn) && // ignore caravan/pods
                     !IsLeavingInShuttleWithNoDestination(pawn) && // ignore pawns in shuttle leaving for what is most likely a quest
-                    GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
+                    gameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
                 {
                     if (PawnComponentsUtility.HasSpawnedComponents(pawn))
                     {
                         PawnComponentsUtility.RemoveComponentsOnDespawned(pawn);
                     }
                     if (pawn.IsPrisoner) pawn.guest.SetGuestStatus(null, GuestStatus.Guest);
-                    GameComponent.ReturnToAvailable(pawn);
+                    gameComponent.ReturnToAvailable(pawn);
                     return false;
                 }
                 return true;
@@ -66,9 +69,11 @@ namespace Kyrun.Reunion
             static void Postfix(InteractionWorker_RecruitAttempt __instance,
                 Pawn recruiter, Pawn recruitee, bool useAudiovisualEffects)
             {
-                if (GameComponent.ListAllySpawned.Contains(recruitee.GetUniqueLoadID()))
+                GameComponent gameComponent = GameComponent.CurrentGame;
+                if (gameComponent != null &&
+                    gameComponent.ListAllySpawned.Contains(recruitee.GetUniqueLoadID()))
                 {
-                    GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+                    gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
                 }
             }
         }

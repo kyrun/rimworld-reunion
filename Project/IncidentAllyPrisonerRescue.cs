@@ -27,7 +27,7 @@ namespace Kyrun.Reunion
             Util.SitePartWorker_Base_Notify_GeneratedByQuestGen(part, outExtraDescriptionRules, outExtraDescriptionConstants);
 
             // Replaces PrisonerWillingToJoinQuestUtility.GeneratePrisoner
-            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning();
             if (pawn == null)
             {
                 return;
@@ -56,7 +56,7 @@ namespace Kyrun.Reunion
         public override void PostMapGenerate(Map map)
         {
             base.PostMapGenerate(map);
-            GameComponent.FlagNextEventReadyForScheduling();
+            GameComponent.CurrentGame?.FlagNextEventReadyForScheduling();
         }
 
         public override void PostDestroy(SitePart sitePart)
