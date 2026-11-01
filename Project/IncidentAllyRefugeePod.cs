@@ -19,7 +19,7 @@ namespace Kyrun.Reunion
             if (gameComponent == null) return false;
 
             Pawn pawn = gameComponent.GetRandomAllyForSpawning();
-            if (pawn == null) { return false; }
+            if (pawn == null) return false;
 
             HealthUtility.DamageUntilDowned(pawn, true);
 
