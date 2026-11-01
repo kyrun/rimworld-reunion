@@ -19,10 +19,7 @@ namespace Kyrun.Reunion
             if (gameComponent == null) return false;
 
             Pawn pawn = gameComponent.GetRandomAllyForSpawning();
-            if (pawn == null)
-            {
-                return false;
-            }
+            if (pawn == null) { return false; }
 
             HealthUtility.DamageUntilDowned(pawn, true);
 
@@ -32,7 +29,7 @@ namespace Kyrun.Reunion
             things.Add(pawn);
             IntVec3 intVec = DropCellFinder.RandomDropSpot(map);
             pawn.guest.getRescuedThoughtOnUndownedBecauseOfPlayer = true;
-            //pawn.mindState.WillJoinColonyIfRescued = true; // will trigger LetterRescueQuestFinished which is wrong. We want LetterRescueeJoins
+            pawn.mindState.WillJoinColonyIfRescued = true;
 
             TaggedString baseLetterLabel = def.letterLabel.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
             TaggedString baseLetterText = def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
