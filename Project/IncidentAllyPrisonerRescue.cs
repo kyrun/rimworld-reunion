@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using RimWorld;
 using RimWorld.QuestGen;
 using RimWorld.Planet;
@@ -12,9 +12,12 @@ namespace Kyrun.Reunion
         public static bool Do()
         {
             var root = DefDatabase<QuestScriptDef>.GetNamed("Reunion_PrisonerRescue");
-            var points = StorytellerUtility.DefaultThreatPointsNow(Current.Game.AnyPlayerHomeMap);
-            QuestUtility.SendLetterQuestAvailable(QuestUtility.GenerateQuestAndMakeAvailable(root, points));
+            Quest quest = Util.GenerateQuestAndMakeAvailable(root);
 
+            if (quest == null)
+                return false;
+
+            QuestUtility.SendLetterQuestAvailable(quest);
             return true;
         }
     }
@@ -23,21 +26,17 @@ namespace Kyrun.Reunion
     {
         public override void Notify_GeneratedByQuestGen(SitePart part, Slate slate, List<Rule> outExtraDescriptionRules, Dictionary<string, string> outExtraDescriptionConstants)
         {
-            // Duplicate code so modularize in Util
+            // Reproduce the grandparent setup without invoking vanilla pawn generation.
             Util.SitePartWorker_Base_Notify_GeneratedByQuestGen(part, outExtraDescriptionRules, outExtraDescriptionConstants);
 
-            // Replaces PrisonerWillingToJoinQuestUtility.GeneratePrisoner
-            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning();
+            // Replaces PrisonerWillingToJoinQuestUtility.GeneratePrisoner.
+            Pawn pawn = Util.PrepareAllyForSitePart(part);
             if (pawn == null)
-            {
                 return;
-            }
 
             pawn.guest.SetGuestStatus(part.site.Faction, GuestStatus.Prisoner);
-            Util.DressPawnIfCold(pawn, part.site.Tile);
+            slate.Set<Pawn>("prisoner", pawn, false);
 
-            part.things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
-            part.things.TryAdd(pawn, true);
             string text;
             PawnRelationUtility.Notify_PawnsSeenByPlayer(Gen.YieldSingle<Pawn>(pawn), out text, true, false);
             outExtraDescriptionRules.AddRange(GrammarUtility.RulesForPawn("prisoner", pawn, outExtraDescriptionConstants, true, true));
