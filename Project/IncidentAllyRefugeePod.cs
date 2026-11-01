@@ -29,7 +29,7 @@ namespace Kyrun.Reunion
             things.Add(pawn);
             IntVec3 intVec = DropCellFinder.RandomDropSpot(map);
             pawn.guest.getRescuedThoughtOnUndownedBecauseOfPlayer = true;
-            pawn.mindState.WillJoinColonyIfRescued = true;
+            pawn.mindState.WillJoinColonyIfRescued = true; // this shows the Downed Refugee message which mentions "Reform caravan", but at this point I don't think people care.
 
             TaggedString baseLetterLabel = def.letterLabel.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
             TaggedString baseLetterText = def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
