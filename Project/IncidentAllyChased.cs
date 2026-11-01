@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using RimWorld;
 using RimWorld.Planet;
@@ -11,28 +11,11 @@ namespace Kyrun.Reunion
     {
         public static bool Do()
         {
-            Map map = Current.Game?.AnyPlayerHomeMap;
-
-            if (map == null)
-            {
-                Util.Warn("Cannot start Refugee Chased event: no player home map available.");
-                return false;
-            }
-
             var root = DefDatabase<QuestScriptDef>.GetNamed("Reunion_AllyChased");
-            var points = StorytellerUtility.DefaultThreatPointsNow(map);
-
-            Slate slate = new Slate();
-            slate.Set<Map>("map", map);
-            slate.Set("points", points);
-
-            Quest quest = QuestUtility.GenerateQuestAndMakeAvailable(root, slate);
+            Quest quest = Util.GenerateQuestAndMakeAvailable(root);
 
             if (quest == null)
-            {
-                Util.Warn("Failed to generate Refugee Chased quest.");
                 return false;
-            }
 
             QuestUtility.SendLetterQuestAvailable(quest);
             return true;
