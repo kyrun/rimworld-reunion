@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using RimWorld;
 using RimWorld.QuestGen;
 using RimWorld.Planet;
@@ -12,35 +12,33 @@ namespace Kyrun.Reunion
         public static bool Do()
         {
             var root = DefDatabase<QuestScriptDef>.GetNamed("Reunion_DownedRefugee");
-            var points = StorytellerUtility.DefaultThreatPointsNow(Current.Game.AnyPlayerHomeMap);
-            QuestUtility.SendLetterQuestAvailable(QuestUtility.GenerateQuestAndMakeAvailable(root, points));
+            Quest quest = Util.GenerateQuestAndMakeAvailable(root);
 
+            if (quest == null)
+                return false;
+
+            QuestUtility.SendLetterQuestAvailable(quest);
             return true;
         }
     }
-
 
     public class SitePartWorker_DownedRefugee : RimWorld.Planet.SitePartWorker_DownedRefugee
     {
         public override void Notify_GeneratedByQuestGen(SitePart part, Slate slate, List<Rule> outExtraDescriptionRules, Dictionary<string, string> outExtraDescriptionConstants)
         {
-            // Duplicate code so modularize in Util
+            // Reproduce the grandparent setup without invoking vanilla pawn generation.
             Util.SitePartWorker_Base_Notify_GeneratedByQuestGen(part, outExtraDescriptionRules, outExtraDescriptionConstants);
 
-            // Replaces DownedRefugeeQuestUtility.GenerateRefugee
-            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning();
+            // Replaces DownedRefugeeQuestUtility.GenerateRefugee.
+            Pawn pawn = Util.PrepareAllyForSitePart(part);
             if (pawn == null)
-            {
                 return;
-            }
 
-            Util.DressPawnIfCold(pawn, part.site.Tile);
+            slate.Set<Pawn>("refugee", pawn, false);
 
             HealthUtility.DamageUntilDowned(pawn, false);
             HealthUtility.DamageLegsUntilIncapableOfMoving(pawn, false);
 
-            part.things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
-            part.things.TryAdd(pawn, true);
             if (pawn.relations != null)
             {
                 pawn.relations.everSeenByPlayer = true;

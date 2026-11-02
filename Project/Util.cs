@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using RimWorld;
 using RimWorld.Planet;
+using RimWorld.QuestGen;
 using Verse;
 using Verse.Grammar;
 
@@ -55,6 +56,52 @@ namespace Kyrun.Reunion
                     Msg("A Reunion event is happening now.");
                 }
             }
+        }
+
+        public static Quest GenerateQuestAndMakeAvailable(QuestScriptDef root)
+        {
+            Map map = null;
+            if (Current.Game != null)
+            {
+                foreach (Map candidate in Current.Game.Maps)
+                {
+                    if (candidate.IsPlayerHome)
+                    {
+                        map = candidate;
+                        break;
+                    }
+                }
+            }
+
+            if (map == null)
+            {
+                Warn("Cannot start Reunion event: no player home map available.");
+                return null;
+            }
+
+            Slate slate = new Slate();
+            slate.Set<Map>("map", map);
+            slate.Set("points", StorytellerUtility.DefaultThreatPointsNow(map));
+
+            Quest quest = QuestUtility.GenerateQuestAndMakeAvailable(root, slate);
+            if (quest == null)
+                Warn("Failed to generate Reunion quest: " + root.defName + ".");
+
+            return quest;
+        }
+
+        public static Pawn PrepareAllyForSitePart(SitePart part)
+        {
+            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning();
+            if (pawn == null)
+                return null;
+
+            DressPawnIfCold(pawn, part.site.Tile);
+
+            part.things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
+            part.things.TryAdd(pawn, true);
+
+            return pawn;
         }
 
         // From virtual function (since calling base.Notify_GeneratedByQuestGen will run the parent and not the grandparent)
