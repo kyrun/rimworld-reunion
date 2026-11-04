@@ -234,24 +234,38 @@ namespace Kyrun.Reunion
         }
 
 
-        public Pawn GetRandomAllyForSpawning()
+        public bool HasAvailableAlly =>
+            ListAllyAvailable != null && ListAllyAvailable.Exists(pawn => pawn != null);
+
+
+        public Pawn GetRandomAllyForSpawning(string source = "unknown")
         {
-            if (ListAllyAvailable.Count == 0)
+            if (ListAllyAvailable == null || ListAllyAvailable.Count == 0)
             {
-                Util.Error("Failed to get random ally for spawning because the Ally list is empty.");
+                Util.Error("Failed to get Ally for " + source +
+                    ": the available Ally list is null or empty.");
                 return null;
             }
 
-            var randomIndex = Random.Range(0, ListAllyAvailable.Count);
-            Pawn pawn = ListAllyAvailable[randomIndex];
-            if (pawn == null)
+            List<Pawn> validPawns = ListAllyAvailable.FindAll(pawn => pawn != null);
+            if (validPawns.Count != ListAllyAvailable.Count)
             {
-                Util.Error("Ally in list at index " + randomIndex + " is null.");
+                Util.Error("Available Ally list contains " +
+                    (ListAllyAvailable.Count - validPawns.Count) + " null entries while preparing " +
+                    source + ". Total entries: " + ListAllyAvailable.Count +
+                    ", valid pawns: " + validPawns.Count + ".");
+            }
+
+            if (validPawns.Count == 0)
+            {
+                Util.Error("Failed to get Ally for " + source +
+                    ": the available Ally list contains no valid pawns. Total entries: " +
+                    ListAllyAvailable.Count + ".");
                 return null;
             }
 
+            Pawn pawn = validPawns[Random.Range(0, validPawns.Count)];
             SetupSpawn(pawn);
-
             return pawn;
         }
 
