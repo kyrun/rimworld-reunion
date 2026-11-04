@@ -60,6 +60,14 @@ namespace Kyrun.Reunion
 
         public static Quest GenerateQuestAndMakeAvailable(QuestScriptDef root)
         {
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null || !gameComponent.HasAvailableAlly)
+            {
+                int availableEntries = gameComponent?.ListAllyAvailable?.Count ?? 0;
+                Error("Cannot generate Reunion quest " + root.defName + ": no valid available Ally pawn. List entries: " + availableEntries + ".");
+                return null;
+            }
+
             Map map = null;
             if (Current.Game != null)
             {
@@ -92,16 +100,47 @@ namespace Kyrun.Reunion
 
         public static Pawn PrepareAllyForSitePart(SitePart part)
         {
-            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning();
+            string source = part?.def?.defName ?? "unknown site part";
+            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning(source);
             if (pawn == null)
+            {
+                Error("Failed to prepare Ally for site part " + source + ": no pawn was returned.");
                 return null;
+            }
 
-            DressPawnIfCold(pawn, part.site.Tile);
+            string stage = "generating starting apparel";
+            try
+            {
+                DressPawnIfCold(pawn, part.site.Tile);
 
-            part.things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
-            part.things.TryAdd(pawn, true);
+                stage = "creating site-part ThingOwner";
+                ThingOwner<Pawn> things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
 
-            return pawn;
+                stage = "adding pawn to site-part ThingOwner";
+                if (!things.TryAdd(pawn, true))
+                {
+                    GameComponent gameComponent = GameComponent.CurrentGame;
+                    string loadId = pawn.GetUniqueLoadID();
+                    Error("Failed to prepare Ally for site part " + source + " at stage '" + stage +
+                        "'. Pawn: " + pawn.Name + " (" + loadId +
+                        "), available: " + (gameComponent?.ListAllyAvailable?.Contains(pawn) ?? false) +
+                        ", tracked as spawned: " + (gameComponent?.ListAllySpawned?.Contains(loadId) ?? false) +
+                        ", spawned: " + pawn.Spawned + ", destroyed: " + pawn.Destroyed +
+                        ", faction: " + pawn.Faction + ", map: " + pawn.Map +
+                        ", owner count: " + things.Count + ".");
+                    return null;
+                }
+
+                part.things = things;
+                return pawn;
+            }
+            catch (System.Exception ex)
+            {
+                Error("Exception while preparing Ally for site part " + source + " at stage '" +
+                    stage + "'. Pawn: " + pawn.Name + " (" + pawn.GetUniqueLoadID() +
+                    "). Exception: " + ex);
+                throw;
+            }
         }
 
         // From virtual function (since calling base.Notify_GeneratedByQuestGen will run the parent and not the grandparent)
