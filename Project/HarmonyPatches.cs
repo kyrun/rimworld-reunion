@@ -249,8 +249,8 @@ namespace Kyrun.Reunion
 
                 if (matches != 1)
                 {
-                    Log.Error(
-                        "[Reunion] Failed to patch QuestNode_PawnsArrive.RunInt: " +
+                    Util.Error(
+                        "Failed to patch QuestNode_PawnsArrive.RunInt: " +
                         "expected exactly one QuestPart_PawnsArrive constructor, found " +
                         matches + ".");
                 }
