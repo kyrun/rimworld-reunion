@@ -120,10 +120,9 @@ namespace Kyrun.Reunion
 
             if (pawn != null && pawn.story != null && pawn.story.traits != null)
             {
-                foreach (var reunionTrait in reunionTraitList)
-                {
-                    if (pawn.story.traits.allTraits.Contains(reunionTrait)) return reunionTrait;
-                }
+                return pawn.story.traits.allTraits.Find(trait =>
+                    trait.def == GameComponent.TraitDef_Character &&
+                    trait.Degree == GameComponent.TRAIT_DEGREE_ALLY);
             }
             return null;
         }
@@ -143,12 +142,10 @@ namespace Kyrun.Reunion
                     {
                         option = new FloatMenuOption(GetReunionTraitDisplayName(trait, pawn), delegate ()
                         {
-                            foreach (var reunionTrait in GameComponent.ReunionTraits)
+                            Trait existingReunionTrait = GetReunionTrait(pawn);
+                            if (existingReunionTrait != null)
                             {
-                                if (pawn.story.traits.allTraits.Contains(reunionTrait))
-                                {
-                                    pawn.story.traits.RemoveTrait(reunionTrait);
-                                }
+                                pawn.story.traits.RemoveTrait(existingReunionTrait);
                             }
 
                             if (trait != null)
