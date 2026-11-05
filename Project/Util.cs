@@ -34,7 +34,10 @@ namespace Kyrun.Reunion
             var str = "";
             foreach (var ally in gameComponent.ListAllyAvailable)
             {
-                str += ally.Name + DELIMITER;
+                if (ally != null)
+                {
+                    str += ally.Name + DELIMITER;
+                }
             }
             if (str != "") str = str.Substring(0, str.Length - DELIMITER.Length); // truncate last delimiter
             Msg("Ally Pawns: " + str);
@@ -101,6 +104,10 @@ namespace Kyrun.Reunion
         public static Pawn PrepareAllyForSitePart(SitePart part)
         {
             string source = part?.def?.defName ?? "unknown site part";
+
+            // GetRandomAllyForSpawning is a potential failure point here because it does multiple things in it.
+            // An Ally might be lost if something inside it, or SetupSpawn fails. This is unlikely, but worth noting.
+            // TODO: Fix later, or not at all. Changes here are too drastic for a rare edge case.
             Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning(source);
             if (pawn == null)
             {

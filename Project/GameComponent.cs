@@ -43,6 +43,12 @@ namespace Kyrun.Reunion
             }
         }
 
+        // Trait is mutable and contains a reference to its owning pawn (trait.pawn).
+        // Unless GainTrait() clones the instance, assigning the trait to another pawn
+        // can change the pawn reference associated with the first pawn's trait.
+        // TODO: Create a fresh Trait instance for each pawn. Identify the Reunion trait
+        // by its definition and degree rather than relying on reference equality.
+        // Possible Refactor: Remove Traits, and reimplement the system, traits are a simply means to an end.
         static Trait m_TraitAlly;
         public static Trait Trait_Ally
         {
@@ -60,7 +66,7 @@ namespace Kyrun.Reunion
         {
             get
             {
-                return new List<Trait>()
+                return new List<Trait>() // TODO: Don't generate a new list everytime it's called.
                 {
                     Trait_Ally
                 };
@@ -71,7 +77,6 @@ namespace Kyrun.Reunion
         const string SAVE_NEXT_EVENT_TICK = "Reunion_NextEventTick";
         const string SAVE_KEY_LIST_ALLY_AVAILABLE = "Reunion_AllyAvailable";
         const string SAVE_KEY_LIST_ALLY_SPAWNED = "Reunion_AllySpawned";
-        const string SAVE_KEY_DICT_ALLY_START_BIO_AGE = "Reunion_AllyStartBioAge";
 
         public static Settings Settings { get; private set; }
 
@@ -218,6 +223,8 @@ namespace Kyrun.Reunion
                     }
                 }
 
+                string pawnSavedMsg = "Saved World pawn with Ally trait to Reunion list: " + pawn.Name;
+
                 // Substract the game-time passed from the pawns age during the time of saving.
                 // This gives us the pawns age at the start of a new game.
                 // We ONLY ever save the pawns age at the start of a new game.
@@ -225,9 +232,10 @@ namespace Kyrun.Reunion
                 if (pawn.ageTracker != null)
                 {
                     pawn.ageTracker.AgeBiologicalTicks -= GenTicks.TicksAbs;
+                    pawnSavedMsg += ", age " + pawn.ageTracker.AgeBiologicalYearsFloat.ToString("0.00");
                 }
 
-                Util.Msg("Saved World pawn with Ally trait to Reunion list: " + pawn.Name + ", age " + pawn.ageTracker.AgeBiologicalYearsFloat.ToString("0.00"));
+                Util.Msg(pawnSavedMsg);
 
                 ListAllyAvailable.Add(pawn);
             }
@@ -256,6 +264,8 @@ namespace Kyrun.Reunion
                     ", valid pawns: " + validPawns.Count + ".");
             }
 
+            // Known Issue: Doesn't filter dead/destroyed pawns.
+
             if (validPawns.Count == 0)
             {
                 Util.Error("Failed to get Ally for " + source +
@@ -276,7 +286,7 @@ namespace Kyrun.Reunion
 
             if (trait != null)
             {
-                pawn.story.traits.allTraits.Remove(trait);
+                pawn.story.traits.RemoveTrait(trait);
                 return true;
             }
 
@@ -440,6 +450,9 @@ namespace Kyrun.Reunion
             {
                 var eventToDo = listAllowedEvents[Random.Range(0, listAllowedEvents.Count)];
                 bool eventStarted = Settings.EventAction[eventToDo].Invoke();
+
+                // Known issue: Exception caused by event invocation above will cause NextEventTick
+                // to remain at -1. Unlikely to happen, so will not fix. If it happens, the game has bigger problems.
 
                 if (!eventStarted)
                 {
