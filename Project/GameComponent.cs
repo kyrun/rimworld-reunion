@@ -347,27 +347,20 @@ namespace Kyrun.Reunion
                 return;
             }
 
-            if (mode != ScheduleMode.Forced && // don't check if forced
-                NextEventTick == -1)
+            if (!EventSchedulePolicy.ShouldSchedule(
+                NextEventTick,
+                Find.TickManager.TicksGame,
+                mode == ScheduleMode.Forced,
+                mode == ScheduleMode.SettingsUpdated))
             {
-                // another event is currently happening
-                if (Prefs.DevMode)
+                if (Prefs.DevMode && mode != ScheduleMode.Init)
                 {
-                    if (mode != ScheduleMode.Init) Util.Msg("Tried to schedule an event but is in the middle of an event.");
+                    if (NextEventTick == -1)
+                        Util.Msg("Tried to schedule an event but is in the middle of an event.");
+                    else
+                        Util.Msg("Tried to schedule an event but another event has already been scheduled.");
                 }
 
-                return;
-            }
-
-            if (mode != ScheduleMode.Forced && // don't check if forced
-                mode != ScheduleMode.SettingsUpdated && // only updating settings will force a reschedule
-                NextEventTick > Find.TickManager.TicksGame)
-            {
-                // another event is already scheduled
-                if (Prefs.DevMode)
-                {
-                    if (mode != ScheduleMode.Init) Util.Msg("Tried to schedule an event but another event has already been scheduled.");
-                }
                 return;
             }
 
@@ -403,25 +396,17 @@ namespace Kyrun.Reunion
                 return;
             }
 
-            List<Settings.Event> listAllowedEvents = new List<Settings.Event>();
-
-            if (Settings.EventAllow[Settings.Event.WandererJoins]) listAllowedEvents.Add(Settings.Event.WandererJoins);
-            if (Settings.EventAllow[Settings.Event.RefugeePodCrash]) listAllowedEvents.Add(Settings.Event.RefugeePodCrash);
-            if (Settings.EventAllow[Settings.Event.RefugeeChased]) listAllowedEvents.Add(Settings.Event.RefugeeChased);
-
-            // add the rest of the allowed events if more than 1 Colonist
-            if (Settings.enableHarderEventsWhenSolo || // if option for harder solo is turned on
-                listAllowedEvents.Count == 0 || // or the player has turned off both the one-colonist events
-                PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive_OfPlayerFaction.Count > 1)  // this is the actual condition
-            {
-                foreach (Settings.Event eventType in Enum.GetValues(typeof(Settings.Event)))
+            List<Settings.Event> listAllowedEvents = AllyEventSelection.GetAllowedEvents(
+                (Settings.Event[])Enum.GetValues(typeof(Settings.Event)),
+                eventType => Settings.EventAllow[eventType],
+                new[]
                 {
-                    if (Settings.EventAllow[eventType] && !listAllowedEvents.Contains(eventType))
-                    {
-                        listAllowedEvents.Add(eventType);
-                    }
-                }
-            }
+                    Settings.Event.WandererJoins,
+                    Settings.Event.RefugeePodCrash,
+                    Settings.Event.RefugeeChased
+                },
+                PawnsFinder.AllMapsCaravansAndTravellingTransporters_Alive_OfPlayerFaction.Count,
+                Settings.enableHarderEventsWhenSolo);
 
             if (listAllowedEvents.Count > 0)
             {
