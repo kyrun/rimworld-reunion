@@ -30,7 +30,7 @@ namespace Kyrun.Reunion
             Util.SitePartWorker_Base_Notify_GeneratedByQuestGen(part, outExtraDescriptionRules, outExtraDescriptionConstants);
 
             // Replaces DownedRefugeeQuestUtility.GenerateRefugee.
-            Pawn pawn = Util.PrepareAllyForSitePart(part);
+            Pawn pawn = Util.PrepareAllyForSitePart(part, "Downed Refugee");
             if (pawn == null)
                 return;
 

@@ -18,7 +18,7 @@ namespace Kyrun.Reunion
             GameComponent gameComponent = GameComponent.CurrentGame;
             if (gameComponent == null) return false;
 
-            Pawn pawn = gameComponent.GetRandomAllyForSpawning();
+            Pawn pawn = gameComponent.GetRandomAllyForSpawning("Refugee Pod");
             if (pawn == null) return false;
 
             HealthUtility.DamageUntilDowned(pawn, true);
@@ -29,7 +29,11 @@ namespace Kyrun.Reunion
             things.Add(pawn);
             IntVec3 intVec = DropCellFinder.RandomDropSpot(map);
             pawn.guest.getRescuedThoughtOnUndownedBecauseOfPlayer = true;
-            pawn.mindState.WillJoinColonyIfRescued = true; // this shows the Downed Refugee message which mentions "Reform caravan", but at this point I don't think people care.
+
+            // NOTE: This shows the Downed Refugee message which mentions "Reform caravan",
+            // but I don't think people read this, and it's a minor issue if they do.
+            pawn.mindState.WillJoinColonyIfRescued = true;
+            
 
             TaggedString baseLetterLabel = def.letterLabel.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
             TaggedString baseLetterText = def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);

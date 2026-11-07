@@ -101,34 +101,34 @@ namespace Kyrun.Reunion
             return quest;
         }
 
-        public static Pawn PrepareAllyForSitePart(SitePart part)
+        public static Pawn PrepareAllyForSitePart(SitePart part, string sourceDebugName)
         {
-            string source = part?.def?.defName ?? "unknown site part";
+            string sourceSitePartName = part?.def?.defName ?? (sourceDebugName + " (Undefined)");
 
             // GetRandomAllyForSpawning is a potential failure point here because it does multiple things in it.
             // An Ally might be lost if something inside it, or SetupSpawn fails. This is unlikely, but worth noting.
             // TODO: Fix later, or not at all. Changes here are too drastic for a rare edge case.
-            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning(source);
+            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning(sourceSitePartName);
             if (pawn == null)
             {
-                Error("Failed to prepare Ally for site part " + source + ": no pawn was returned.");
+                Error("Failed to prepare Ally for site part " + sourceSitePartName + ": no pawn was returned.");
                 return null;
             }
 
-            string stage = "generating starting apparel";
+            string stage = "Generating starting apparel";
             try
             {
                 DressPawnIfCold(pawn, part.site.Tile);
 
-                stage = "creating site-part ThingOwner";
+                stage = "Creating site-part ThingOwner";
                 ThingOwner<Pawn> things = new ThingOwner<Pawn>(part, true, LookMode.Deep);
 
-                stage = "adding pawn to site-part ThingOwner";
+                stage = "Adding pawn to site-part ThingOwner";
                 if (!things.TryAdd(pawn, true))
                 {
                     GameComponent gameComponent = GameComponent.CurrentGame;
                     string loadId = pawn.GetUniqueLoadID();
-                    Error("Failed to prepare Ally for site part " + source + " at stage '" + stage +
+                    Error("Failed to prepare Ally for site part " + sourceSitePartName + " at stage '" + stage +
                         "'. Pawn: " + pawn.Name + " (" + loadId +
                         "), available: " + (gameComponent?.ListAllyAvailable?.Contains(pawn) ?? false) +
                         ", tracked as spawned: " + (gameComponent?.ListAllySpawned?.Contains(loadId) ?? false) +
@@ -143,7 +143,7 @@ namespace Kyrun.Reunion
             }
             catch (System.Exception ex)
             {
-                Error("Exception while preparing Ally for site part " + source + " at stage '" +
+                Error("Exception while preparing Ally for site part " + sourceSitePartName + " at stage '" +
                     stage + "'. Pawn: " + pawn.Name + " (" + pawn.GetUniqueLoadID() +
                     "). Exception: " + ex);
                 throw;

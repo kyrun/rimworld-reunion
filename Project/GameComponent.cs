@@ -225,11 +225,11 @@ namespace Kyrun.Reunion
             ListAllyAvailable.Exists(pawn => pawn != null && !pawn.Dead && !pawn.Destroyed);
 
 
-        public Pawn GetRandomAllyForSpawning(string source = "unknown")
+        public Pawn GetRandomAllyForSpawning(string sourceDebugName)
         {
             if (ListAllyAvailable == null || ListAllyAvailable.Count == 0)
             {
-                Util.Error("Failed to get Ally for " + source +
+                Util.Error("Failed to get Ally for " + sourceDebugName +
                     ": the available Ally list is null or empty.");
                 return null;
             }
@@ -241,12 +241,12 @@ namespace Kyrun.Reunion
             {
                 Util.Warn("Removed " + invalidCount +
                     " null, dead, or destroyed pawn(s) from the available Ally list while preparing " +
-                    source + ".");
+                    sourceDebugName + ".");
             }
 
             if (ListAllyAvailable.Count == 0)
             {
-                Util.Error("Failed to get Ally for " + source +
+                Util.Error("Failed to get Ally while preparing " + sourceDebugName +
                     ": the available Ally list contains no living, valid pawns.");
                 return null;
             }
