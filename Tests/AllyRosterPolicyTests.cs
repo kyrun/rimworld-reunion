@@ -23,7 +23,7 @@ namespace Reunion.Tests
         [InlineData(null)]
         public void AddAvailableRejectsInvalidPawn(string? pawn)
         {
-            var available = new List<string>();
+            var available = new List<string?>();
 
             Assert.False(AllyRosterPolicy.AddAvailable(available, pawn, IsValid));
             Assert.Empty(available);
@@ -134,6 +134,19 @@ namespace Reunion.Tests
 
             Assert.True(AllyRosterPolicy.RemoveSpawned(spawned, "pawn-a", pawn => pawn));
             Assert.Equal(new[] { "pawn-b" }, spawned);
+        }
+
+        [Fact]
+        public void ReturningSpawnedPawnRestoresItToAvailableList()
+        {
+            var available = new List<string>();
+            var spawned = new List<string> { "pawn-a" };
+
+            Assert.True(AllyRosterPolicy.RemoveSpawned(spawned, "pawn-a", pawn => pawn));
+            Assert.True(AllyRosterPolicy.AddAvailable(available, "pawn-a", IsValid));
+
+            Assert.Equal(new[] { "pawn-a" }, available);
+            Assert.Empty(spawned);
         }
 
         [Fact]
