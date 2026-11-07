@@ -49,8 +49,11 @@ namespace Kyrun.Reunion
             T item,
             Func<T, string> getId)
         {
-            if (!available.Remove(item))
+            if (available.RemoveAll(candidate =>
+                EqualityComparer<T>.Default.Equals(candidate, item)) == 0)
+            {
                 return false;
+            }
 
             string id = getId(item);
             if (!spawnedIds.Contains(id))
