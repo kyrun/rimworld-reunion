@@ -5,7 +5,7 @@ namespace Reunion.Tests
 {
     public class AllyRosterPolicyTests
     {
-        private static bool IsValid(string pawn) =>
+        private static bool IsValid(string? pawn) =>
             pawn != null && pawn != "dead" && pawn != "destroyed";
 
         [Fact]
@@ -21,11 +21,20 @@ namespace Reunion.Tests
         [InlineData("dead")]
         [InlineData("destroyed")]
         [InlineData(null)]
-        public void AddAvailableRejectsInvalidPawn(string pawn)
+        public void AddAvailableRejectsInvalidPawn(string? pawn)
         {
             var available = new List<string>();
 
             Assert.False(AllyRosterPolicy.AddAvailable(available, pawn, IsValid));
+            Assert.Empty(available);
+        }
+
+        [Fact]
+        public void CanAddAvailableChecksEligibilityWithoutMutatingList()
+        {
+            var available = new List<string>();
+
+            Assert.True(AllyRosterPolicy.CanAddAvailable(available, "pawn-a", IsValid));
             Assert.Empty(available);
         }
 
@@ -50,7 +59,7 @@ namespace Reunion.Tests
         [Fact]
         public void RemoveInvalidRemovesNullDeadAndDestroyedPawns()
         {
-            var available = new List<string> { "pawn-a", null, "dead", "destroyed", "pawn-b" };
+            var available = new List<string?> { "pawn-a", null, "dead", "destroyed", "pawn-b" };
 
             int removed = AllyRosterPolicy.RemoveInvalid(available, IsValid);
 
@@ -100,6 +109,15 @@ namespace Reunion.Tests
         public void RemoveSpawnedRemovesReturnedPawnId()
         {
             var spawned = new List<string> { "pawn-a", "pawn-b" };
+
+            Assert.True(AllyRosterPolicy.RemoveSpawned(spawned, "pawn-a", pawn => pawn));
+            Assert.Equal(new[] { "pawn-b" }, spawned);
+        }
+
+        [Fact]
+        public void RemoveSpawnedClearsAllDuplicateIds()
+        {
+            var spawned = new List<string> { "pawn-a", "pawn-b", "pawn-a" };
 
             Assert.True(AllyRosterPolicy.RemoveSpawned(spawned, "pawn-a", pawn => pawn));
             Assert.Equal(new[] { "pawn-b" }, spawned);
