@@ -2,9 +2,33 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Build and Launch RimWorld",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "Reunion.sln",
+        "-c",
+        "Release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
       "label": "Run All Tests",
       "type": "process",
-      "command": "bash",
+      "command": "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
       "args": [
         "-lc",
         "dotnet build Reunion.sln -c Debug && dotnet test Tests/Reunion.Tests.csproj -c Debug && python scripts/validate_xml.py"
@@ -18,10 +42,7 @@
         "panel": "shared",
         "clear": true
       },
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      }
+      "group": "test"
     }
   ]
 }
