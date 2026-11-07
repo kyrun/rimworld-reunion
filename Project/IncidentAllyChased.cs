@@ -26,7 +26,7 @@ namespace Kyrun.Reunion
     {
         protected override void RunInt()
         {
-            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning("Ally Chased quest");
+            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning("Ally Chased");
             if (pawn == null)
             {
                 return;

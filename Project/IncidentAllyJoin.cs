@@ -17,7 +17,7 @@ namespace Kyrun.Reunion
             GameComponent gameComponent = GameComponent.CurrentGame;
             if (gameComponent == null) return false;
 
-            Pawn pawn = gameComponent.GetRandomAllyForSpawning();
+            Pawn pawn = gameComponent.GetRandomAllyForSpawning("Ally Join");
             if (pawn == null)
             {
                 return false;

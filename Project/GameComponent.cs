@@ -43,35 +43,13 @@ namespace Kyrun.Reunion
             }
         }
 
-        // Trait is mutable and contains a reference to its owning pawn (trait.pawn).
-        // Unless GainTrait() clones the instance, assigning the trait to another pawn
-        // can change the pawn reference associated with the first pawn's trait.
-        // TODO: Create a fresh Trait instance for each pawn. Identify the Reunion trait
-        // by its definition and degree rather than relying on reference equality.
-        // Possible Refactor: Remove Traits, and reimplement the system, traits are a simply means to an end.
-        static Trait m_TraitAlly;
-        public static Trait Trait_Ally
-        {
-            get
+        // Trait instances are mutable and hold a reference to their owning pawn.
+        // Return a fresh instance for each dropdown so separate pawns never share one.
+        public static IReadOnlyList<Trait> ReunionTraits =>
+            new List<Trait>
             {
-                if (m_TraitAlly == null)
-                {
-                    m_TraitAlly = new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true);
-                }
-                return m_TraitAlly;
-            }
-        }
-
-        public static IReadOnlyList<Trait> ReunionTraits
-        {
-            get
-            {
-                return new List<Trait>() // TODO: Don't generate a new list everytime it's called.
-                {
-                    Trait_Ally
-                };
-            }
-        }
+                new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true)
+            };
 
         // Save key
         const string SAVE_NEXT_EVENT_TICK = "Reunion_NextEventTick";
@@ -212,7 +190,7 @@ namespace Kyrun.Reunion
 
         public void AddPawnToAvailableList(Pawn pawn)
         {
-            if (pawn != null && !pawn.Dead && !ListAllyAvailable.Contains(pawn))
+            if (pawn != null && !pawn.Dead && !pawn.Destroyed && !ListAllyAvailable.Contains(pawn))
             {
                 if (pawn.health != null)
                 {
@@ -243,38 +221,37 @@ namespace Kyrun.Reunion
 
 
         public bool HasAvailableAlly =>
-            ListAllyAvailable != null && ListAllyAvailable.Exists(pawn => pawn != null);
+            ListAllyAvailable != null &&
+            ListAllyAvailable.Exists(pawn => pawn != null && !pawn.Dead && !pawn.Destroyed);
 
 
-        public Pawn GetRandomAllyForSpawning(string source = "unknown")
+        public Pawn GetRandomAllyForSpawning(string sourceDebugName)
         {
             if (ListAllyAvailable == null || ListAllyAvailable.Count == 0)
             {
-                Util.Error("Failed to get Ally for " + source +
+                Util.Error("Failed to get Ally for " + sourceDebugName +
                     ": the available Ally list is null or empty.");
                 return null;
             }
 
-            List<Pawn> validPawns = ListAllyAvailable.FindAll(pawn => pawn != null);
-            if (validPawns.Count != ListAllyAvailable.Count)
+            int invalidCount = ListAllyAvailable.RemoveAll(pawn =>
+                pawn == null || pawn.Dead || pawn.Destroyed);
+
+            if (invalidCount > 0)
             {
-                Util.Error("Available Ally list contains " +
-                    (ListAllyAvailable.Count - validPawns.Count) + " null entries while preparing " +
-                    source + ". Total entries: " + ListAllyAvailable.Count +
-                    ", valid pawns: " + validPawns.Count + ".");
+                Util.Warn("Removed " + invalidCount +
+                    " null, dead, or destroyed pawn(s) from the available Ally list while preparing " +
+                    sourceDebugName + ".");
             }
 
-            // Known Issue: Doesn't filter dead/destroyed pawns.
-
-            if (validPawns.Count == 0)
+            if (ListAllyAvailable.Count == 0)
             {
-                Util.Error("Failed to get Ally for " + source +
-                    ": the available Ally list contains no valid pawns. Total entries: " +
-                    ListAllyAvailable.Count + ".");
+                Util.Error("Failed to get Ally while preparing " + sourceDebugName +
+                    ": the available Ally list contains no living, valid pawns.");
                 return null;
             }
 
-            Pawn pawn = validPawns[Random.Range(0, validPawns.Count)];
+            Pawn pawn = ListAllyAvailable[Random.Range(0, ListAllyAvailable.Count)];
             SetupSpawn(pawn);
             return pawn;
         }
