@@ -18,12 +18,20 @@ namespace Kyrun.Reunion
             return false;
         }
 
+        internal static bool CanAddAvailable<T>(
+            List<T> available,
+            T item,
+            Predicate<T> isValid)
+        {
+            return isValid(item) && !available.Contains(item);
+        }
+
         internal static bool AddAvailable<T>(
             List<T> available,
             T item,
             Predicate<T> isValid)
         {
-            if (!isValid(item) || available.Contains(item))
+            if (!CanAddAvailable(available, item, isValid))
                 return false;
 
             available.Add(item);
@@ -56,7 +64,7 @@ namespace Kyrun.Reunion
             T item,
             Func<T, string> getId)
         {
-            return spawnedIds.Remove(getId(item));
+            return spawnedIds.RemoveAll(id => id == getId(item)) > 0;
         }
     }
 }
