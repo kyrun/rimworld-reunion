@@ -20,5 +20,6 @@
     <!-- Compile the production policy source directly, without loading RimWorld assemblies. -->
     <Compile Include="../Project/AllyEventSelection.cs" Link="AllyEventSelection.cs" />
     <Compile Include="../Project/EventSchedulePolicy.cs" Link="EventSchedulePolicy.cs" />
+    <Compile Include="../Project/AllyRosterPolicy.cs" Link="AllyRosterPolicy.cs" />
   </ItemGroup>
 </Project>
