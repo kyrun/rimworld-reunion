@@ -197,7 +197,7 @@ namespace Kyrun.Reunion
             if (ListAllyAvailable == null)
                 ListAllyAvailable = new List<Pawn>();
 
-            if (AllyRosterPolicy.AddAvailable(ListAllyAvailable, pawn, IsValidAllyPawn))
+            if (AllyRosterPolicy.CanAddAvailable(ListAllyAvailable, pawn, IsValidAllyPawn))
             {
                 if (pawn.health != null)
                 {
@@ -222,6 +222,7 @@ namespace Kyrun.Reunion
 
                 Util.Msg(pawnSavedMsg);
 
+                AllyRosterPolicy.AddAvailable(ListAllyAvailable, pawn, IsValidAllyPawn);
             }
         }
 
