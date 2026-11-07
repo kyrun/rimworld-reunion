@@ -81,6 +81,19 @@ namespace Reunion.Tests
         }
 
         [Fact]
+        public void MoveToSpawnedRemovesAllDuplicateAvailableEntries()
+        {
+            var available = new List<string> { "pawn-a", "pawn-b", "pawn-a" };
+            var spawned = new List<string>();
+
+            Assert.True(AllyRosterPolicy.MoveToSpawned(
+                available, spawned, "pawn-a", pawn => pawn));
+
+            Assert.Equal(new[] { "pawn-b" }, available);
+            Assert.Equal(new[] { "pawn-a" }, spawned);
+        }
+
+        [Fact]
         public void MoveToSpawnedDoesNotDuplicateExistingSpawnedId()
         {
             var available = new List<string> { "pawn-a" };
