@@ -188,9 +188,16 @@ namespace Kyrun.Reunion
         }
 
 
+        static bool IsValidAllyPawn(Pawn pawn) =>
+            pawn != null && !pawn.Dead && !pawn.Destroyed;
+
+
         public void AddPawnToAvailableList(Pawn pawn)
         {
-            if (pawn != null && !pawn.Dead && !pawn.Destroyed && !ListAllyAvailable.Contains(pawn))
+            if (ListAllyAvailable == null)
+                ListAllyAvailable = new List<Pawn>();
+
+            if (AllyRosterPolicy.AddAvailable(ListAllyAvailable, pawn, IsValidAllyPawn))
             {
                 if (pawn.health != null)
                 {
@@ -215,14 +222,13 @@ namespace Kyrun.Reunion
 
                 Util.Msg(pawnSavedMsg);
 
-                ListAllyAvailable.Add(pawn);
             }
         }
 
 
         public bool HasAvailableAlly =>
             ListAllyAvailable != null &&
-            ListAllyAvailable.Exists(pawn => pawn != null && !pawn.Dead && !pawn.Destroyed);
+            AllyRosterPolicy.HasAvailable(ListAllyAvailable, IsValidAllyPawn);
 
 
         public Pawn GetRandomAllyForSpawning(string sourceDebugName)
@@ -234,8 +240,7 @@ namespace Kyrun.Reunion
                 return null;
             }
 
-            int invalidCount = ListAllyAvailable.RemoveAll(pawn =>
-                pawn == null || pawn.Dead || pawn.Destroyed);
+            int invalidCount = AllyRosterPolicy.RemoveInvalid(ListAllyAvailable, IsValidAllyPawn);
 
             if (invalidCount > 0)
             {
@@ -273,8 +278,13 @@ namespace Kyrun.Reunion
 
         public void SetupSpawn(Pawn pawn)
         {
-            ListAllyAvailable.Remove(pawn);
-            ListAllySpawned.Add(pawn.GetUniqueLoadID());
+            if (!AllyRosterPolicy.MoveToSpawned(
+                ListAllyAvailable, ListAllySpawned, pawn, p => p.GetUniqueLoadID()))
+            {
+                Util.Warn("Could not move Ally to spawned tracking because it was not in the available list: " + pawn);
+                return;
+            }
+
             pawn.SetFactionDirect(null); // remove faction, if any
 
             if (Find.TickManager != null && pawn != null && pawn.ageTracker != null)
@@ -305,7 +315,7 @@ namespace Kyrun.Reunion
 
         public void ReturnToAvailable(Pawn pawn)
         {
-            ListAllySpawned.Remove(pawn.GetUniqueLoadID());
+            AllyRosterPolicy.RemoveSpawned(ListAllySpawned, pawn, p => p.GetUniqueLoadID());
 
             if (pawn.health != null && pawn.health.hediffSet != null && pawn.health.hediffSet.hediffs != null)
             {
