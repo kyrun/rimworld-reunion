@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
-using Random = UnityEngine.Random;
 
 namespace Kyrun.Reunion
 {
@@ -25,6 +24,9 @@ namespace Kyrun.Reunion
 
         // Resolve the component belonging to the currently active game.
         public static GameComponent CurrentGame => Current.Game?.GetComponent<GameComponent>();
+
+        public const int NUM_TICKS_PER_CHECK = 250;
+        public static int RandomOffset = Rand.Range(0, NUM_TICKS_PER_CHECK);
 
         // Trait-related
         public const string TRAIT_DEF_CHARACTER = "ReunionCharacter";
@@ -84,11 +86,28 @@ namespace Kyrun.Reunion
         {
             base.GameComponentTick();
 
-            if (NextEventTick <= 0 || Find.TickManager == null)
+            if (NextEventTick <= 0)
+            {
                 return;
+            }
 
-            if (Find.TickManager.TicksGame >= NextEventTick)
+            var tickManager = Find.TickManager;
+            if (tickManager == null)
+            {
+                return;
+            }
+
+            var currentTick = tickManager.TicksGame;
+            if (currentTick % NUM_TICKS_PER_CHECK != 0)
+            {
+                return;
+            }
+
+            if (currentTick >= NextEventTick)
+            {
+                Util.Warn(currentTick + " >= " + NextEventTick);
                 DecideAndDoEvent();
+            }
         }
 
 
@@ -246,7 +265,7 @@ namespace Kyrun.Reunion
                 return null;
             }
 
-            Pawn pawn = ListAllyAvailable[Random.Range(0, ListAllyAvailable.Count)];
+            Pawn pawn = ListAllyAvailable[Rand.Range(0, ListAllyAvailable.Count)];
             SetupSpawn(pawn);
             return pawn;
         }
@@ -369,7 +388,7 @@ namespace Kyrun.Reunion
             var min = Settings.minDaysBetweenEvents * GenDate.TicksPerDay;
             if (min == 0) min = 1; // limit it to at least 1 tick
             var max = Settings.maxDaysBetweenEvents * GenDate.TicksPerDay;
-            NextEventTick = Find.TickManager.TicksGame + Random.Range(min, max);
+            NextEventTick = Find.TickManager.TicksGame + Rand.Range(min, max);
 
 #if TESTING
 			NextEventTick = Find.TickManager.TicksGame + 1000;
@@ -420,7 +439,7 @@ namespace Kyrun.Reunion
 
             if (listAllowedEvents.Count > 0)
             {
-                var eventToDo = listAllowedEvents[Random.Range(0, listAllowedEvents.Count)];
+                var eventToDo = listAllowedEvents[Rand.Range(0, listAllowedEvents.Count)];
                 bool eventStarted = Settings.EventAction[eventToDo].Invoke();
 
                 // Known issue: Exception caused by event invocation above will cause NextEventTick
