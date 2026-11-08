@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using RimWorld;
 using RimWorld.Planet;
@@ -12,9 +12,12 @@ namespace Kyrun.Reunion
         public static bool Do()
         {
             var root = DefDatabase<QuestScriptDef>.GetNamed("Reunion_AllyChased");
-            var points = StorytellerUtility.DefaultThreatPointsNow(Current.Game.AnyPlayerHomeMap);
-            QuestUtility.SendLetterQuestAvailable(QuestUtility.GenerateQuestAndMakeAvailable(root, points));
+            Quest quest = Util.GenerateQuestAndMakeAvailable(root);
 
+            if (quest == null)
+                return false;
+
+            QuestUtility.SendLetterQuestAvailable(quest);
             return true;
         }
     }
@@ -23,7 +26,7 @@ namespace Kyrun.Reunion
     {
         protected override void RunInt()
         {
-            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            Pawn pawn = GameComponent.CurrentGame?.GetRandomAllyForSpawning("Ally Chased");
             if (pawn == null)
             {
                 return;
@@ -55,68 +58,58 @@ namespace Kyrun.Reunion
 
         [NoTranslate]
         public SlateRef<string> addToList;
-
     }
 
     public class IncidentAllyChased_PawnsArrive : QuestNode_PawnsArrive
     {
-        protected override void RunInt()
-        {
-            Slate slate = QuestGen.slate;
-            PawnsArrivalModeDef pawnsArrivalModeDef = this.arrivalMode.GetValue(slate) ?? PawnsArrivalModeDefOf.EdgeWalkIn;
-
-            // this line is the only thing changed (we are using custom QuestPart)
-            var pawnsArrive = new Kyrun.Reunion.QuestPart_PawnsArrive();
-
-            pawnsArrive.inSignal = (QuestGenUtility.HardcodedSignalWithQuestID(this.inSignal.GetValue(slate)) ?? QuestGen.slate.Get<string>("inSignal", null, false));
-            pawnsArrive.pawns.AddRange(this.pawns.GetValue(slate));
-            pawnsArrive.arrivalMode = pawnsArrivalModeDef;
-            pawnsArrive.joinPlayer = this.joinPlayer.GetValue(slate);
-            pawnsArrive.mapParent = QuestGen.slate.Get<Map>("map", null, false).Parent;
-            if (pawnsArrivalModeDef.walkIn)
-            {
-                pawnsArrive.spawnNear = (this.walkInSpot.GetValue(slate) ?? (QuestGen.slate.Get<IntVec3?>("walkInSpot", null, false) ?? IntVec3.Invalid));
-            }
-            if (!this.customLetterLabel.GetValue(slate).NullOrEmpty() || this.customLetterLabelRules.GetValue(slate) != null)
-            {
-                QuestGen.AddTextRequest("root", delegate (string x)
-                {
-                    pawnsArrive.customLetterLabel = x;
-                }, QuestGenUtility.MergeRules(this.customLetterLabelRules.GetValue(slate), this.customLetterLabel.GetValue(slate), "root"));
-            }
-            if (!this.customLetterText.GetValue(slate).NullOrEmpty() || this.customLetterTextRules.GetValue(slate) != null)
-            {
-                QuestGen.AddTextRequest("root", delegate (string x)
-                {
-                    pawnsArrive.customLetterText = x;
-                }, QuestGenUtility.MergeRules(this.customLetterTextRules.GetValue(slate), this.customLetterText.GetValue(slate), "root"));
-            }
-            QuestGen.quest.AddPart(pawnsArrive);
-        }
+        // Intentionally empty. Used by Harmony transpiler.
     }
 
     public class QuestPart_PawnsArrive : RimWorld.QuestPart_PawnsArrive
     {
+        public override void Notify_QuestSignalReceived(Signal signal)
+        {
+            base.Notify_QuestSignalReceived(signal);
+
+            // Only handle the MapRemoved signal for this quest's target map.
+            if (!signal.tag.EndsWith(".MapRemoved", StringComparison.Ordinal))
+                return;
+
+            if (!signal.args.TryGetArg("SUBJECT", out MapParent subject) ||
+                subject != mapParent)
+                return;
+
+            // The pawn's faction changes to Player when the arrival process runs.
+            bool allySpawned = pawns.Exists(pawn =>
+                pawn != null && pawn.Faction == Faction.OfPlayer);
+
+            quest.End(
+                allySpawned ? QuestEndOutcome.Success : QuestEndOutcome.Fail,
+                sendLetter: true);
+        }
+
         public override void Cleanup()
         {
             base.Cleanup(); // there's nothing in the base call (at the moment), but just in case in the future there's something
 
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return;
+
             // get pawns that spawned from Reunion
             var listToReturn = pawns.FindAll((pawn) =>
             {
-                return pawn.Faction != Faction.OfPlayer && GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID());
+                return pawn.Faction != Faction.OfPlayer && gameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID());
             });
 
-            GameComponent.FlagNextEventReadyForScheduling();
+            gameComponent.FlagNextEventReadyForScheduling();
             foreach (var pawn in listToReturn)
             {
-                GameComponent.ReturnToAvailable(pawn);
+                gameComponent.ReturnToAvailable(pawn);
             }
 
             if (quest.State == QuestState.EndedOfferExpired) saveByReference = true;
-            else GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+            else gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
         }
-
 
         public override void ExposeData()
         {

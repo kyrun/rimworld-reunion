@@ -28,14 +28,14 @@ namespace Kyrun.Reunion
             var prevMin = _settings.minDaysBetweenEvents;
             var strMinDaysBtwn = _settings.minDaysBetweenEvents.ToString();
             listingStandard.TextFieldNumericLabeled("Reunion.MinDaysBetweenEvents".Translate(), ref _settings.minDaysBetweenEvents, ref strMinDaysBtwn, INPUT_MIN_DAYS_BTWN_EVENTS, INPUT_MAX_DAYS_BTWN_EVENTS);
-            _settings.minDaysBetweenEvents = UnityEngine.Mathf.RoundToInt(listingStandard.Slider(_settings.minDaysBetweenEvents, INPUT_MIN_DAYS_BTWN_EVENTS, INPUT_MAX_DAYS_BTWN_EVENTS));
+            _settings.minDaysBetweenEvents = (int)GenMath.RoundTo(listingStandard.Slider(_settings.minDaysBetweenEvents, INPUT_MIN_DAYS_BTWN_EVENTS, INPUT_MAX_DAYS_BTWN_EVENTS), 1.0f);
 
             listingStandard.Gap(GAP_HEIGHT);
 
             var prevMax = _settings.maxDaysBetweenEvents;
             var strMaxDaysBtwn = _settings.maxDaysBetweenEvents.ToString();
             listingStandard.TextFieldNumericLabeled("Reunion.MaxDaysBetweenEvents".Translate(), ref _settings.maxDaysBetweenEvents, ref strMaxDaysBtwn, INPUT_MIN_DAYS_BTWN_EVENTS + 1, INPUT_MAX_DAYS_BTWN_EVENTS);
-            _settings.maxDaysBetweenEvents = UnityEngine.Mathf.RoundToInt(listingStandard.Slider(_settings.maxDaysBetweenEvents, INPUT_MIN_DAYS_BTWN_EVENTS + 1, INPUT_MAX_DAYS_BTWN_EVENTS));
+            _settings.maxDaysBetweenEvents = (int)GenMath.RoundTo(listingStandard.Slider(_settings.maxDaysBetweenEvents, INPUT_MIN_DAYS_BTWN_EVENTS + 1, INPUT_MAX_DAYS_BTWN_EVENTS), 1.0f);
 
             if (_settings.minDaysBetweenEvents >= _settings.maxDaysBetweenEvents)
             {
@@ -45,7 +45,7 @@ namespace Kyrun.Reunion
             if (Current.Game != null && Current.Game.Info.RealPlayTimeInteracting > 0 &&
                 (prevMin != _settings.minDaysBetweenEvents || prevMax != _settings.maxDaysBetweenEvents))
             {
-                GameComponent.TryScheduleNextEvent(ScheduleMode.SettingsUpdated);
+                GameComponent.CurrentGame?.TryScheduleNextEvent(ScheduleMode.SettingsUpdated);
             }
 
             listingStandard.Gap(GAP_HEIGHT);

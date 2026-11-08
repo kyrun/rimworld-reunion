@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using System.Collections.Generic;
 using RimWorld;
-using RimWorld.QuestGen;
-using RimWorld.Planet;
 using Verse;
-using HarmonyLib;
-using Random = UnityEngine.Random;
 
 namespace Kyrun.Reunion
 {
@@ -15,11 +8,11 @@ namespace Kyrun.Reunion
     {
         public static bool Do()
         {
-            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
-            if (pawn == null)
-            {
-                return false;
-            }
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return false;
+
+            Pawn pawn = gameComponent.GetRandomAllyForSpawning("Refugee Pod");
+            if (pawn == null) return false;
 
             HealthUtility.DamageUntilDowned(pawn, true);
 
@@ -29,7 +22,10 @@ namespace Kyrun.Reunion
             things.Add(pawn);
             IntVec3 intVec = DropCellFinder.RandomDropSpot(map);
             pawn.guest.getRescuedThoughtOnUndownedBecauseOfPlayer = true;
-            //pawn.mindState.WillJoinColonyIfRescued = true; // will trigger LetterRescueQuestFinished which is wrong. We want LetterRescueeJoins
+
+            // NOTE: This shows the Downed Refugee message which mentions "Reform caravan",
+            // but I don't think people read this, and it's a minor issue if they do.
+            pawn.mindState.WillJoinColonyIfRescued = true;
 
             TaggedString baseLetterLabel = def.letterLabel.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
             TaggedString baseLetterText = def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
@@ -42,7 +38,7 @@ namespace Kyrun.Reunion
             activeDropPodInfo.leaveSlag = true;
             DropPodUtility.MakeDropPodAt(intVec, map, activeDropPodInfo);
 
-            GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+            gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
             return true;
         }
     }

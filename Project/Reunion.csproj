@@ -1,48 +1,90 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <!-- Build configuration -->
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+
     <ProjectGuid>{8E264E23-3389-4DA6-836D-ABEB318EB1AE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Kyrun.Reunion</RootNamespace>
     <AssemblyName>Reunion</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <TargetFramework>net48</TargetFramework>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <GenerateDependencyFile>false</GenerateDependencyFile> 
+
+    <!-- Build settings -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Deterministic>true</Deterministic>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
+
+
+  <!-- DEBUG CONFIGURATION -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Release\1.6\Assemblies\</OutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)..\Release\1.7\Assemblies\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+
+
+  <!-- RELEASE CONFIGURATION -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Release\1.6\Assemblies\</OutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)..\Release\1.7\Assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+
+
+  <!-- NUGET DEPENDENCIES -->
   <ItemGroup>
-    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.4518" />
-    <PackageReference Include="Lib.Harmony" Version="2.3.6" />
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <!-- Automatically use the latest RimWorld 1.7 reference assemblies -->
+    <PackageReference Include="Krafs.Rimworld.Ref" Version="1.7.*-*" />
+
+    <!-- Harmony 3 reference assemblies (runtime supplied by Harmony mod) -->
+    <PackageReference Include="Lib.Harmony.Ref" Version="3.*-*" />
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(SolutionDir)$(Configuration)&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\RimWorld\Mods\Reunion&quot; /s /i /y&#xD;&#xA;start steam://rungameid/294100" />
+
+  <!-- POST-BUILD: DEPLOY AND LAUNCH -->
+  <Target Name="DeployAndLaunchRimWorld" AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Release'">
+
+    <PropertyGroup>
+      <RimWorldInstallDir>C:\Program Files (x86)\Steam\steamapps\common\RimWorld</RimWorldInstallDir>
+      <ReunionAssembliesDirectory>$(RimWorldInstallDir)\Mods\Reunion\1.7\Assemblies</ReunionAssembliesDirectory>
+    </PropertyGroup>
+
+    <!-- Verify RimWorld installation -->
+    <Error Condition="!Exists('$(RimWorldInstallDir)\RimWorld.exe')"
+          Text="RimWorld installation not found at: $(RimWorldInstallDir)" />
+
+    <!-- Verify compiled assembly -->
+    <Error Condition="!Exists('$(TargetPath)')"
+          Text="Build output not found: $(TargetPath)" />
+
+    <!-- Create destination directory -->
+    <MakeDir Directories="$(ReunionAssembliesDirectory)" />
+
+    <!-- Deploy compiled assembly -->
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(ReunionAssembliesDirectory)"
+          SkipUnchangedFiles="true" />
+
+    <!-- Launch RimWorld through Steam -->
+    <Exec Command="start &quot;&quot; &quot;steam://rungameid/294100&quot;" />
+
   </Target>
+
 </Project>

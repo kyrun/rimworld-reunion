@@ -25,7 +25,7 @@ namespace Kyrun.Reunion
         public Dictionary<Event, bool> EventAllow = new Dictionary<Event, bool>()
         {
             { Event.WandererJoins, true },
-            { Event.RefugeePodCrash, false },
+            { Event.RefugeePodCrash, true },
             { Event.RefugeeChased, true },
             { Event.PrisonerRescue, true },
             { Event.DownedRefugee, true },

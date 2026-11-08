@@ -8,20 +8,23 @@ namespace Kyrun.Reunion
         public static bool Do()
         {
             Map map = Current.Game.RandomPlayerHomeMap;
-            IntVec3 loc;
-            if (!TryFindEntryCell(map, out loc))
+            IncidentWorker_AllyJoin worker = new IncidentWorker_AllyJoin();
+            if (map == null || !worker.CanSpawnJoiner(map))
             {
                 return false;
             }
 
-            Pawn pawn = GameComponent.GetRandomAllyForSpawning();
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            if (gameComponent == null) return false;
+
+            Pawn pawn = gameComponent.GetRandomAllyForSpawning("Ally Join");
             if (pawn == null)
             {
                 return false;
             }
 
             pawn.SetFactionDirect(Faction.OfPlayer);
-            GenSpawn.Spawn(pawn, loc, map, WipeMode.Vanish);
+            worker.SpawnJoiner(map, pawn);
 
             var def = IncidentDefs.Reunion_AllyJoin;
             TaggedString baseLetterLabel = def.letterLabel.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
@@ -29,27 +32,24 @@ namespace Kyrun.Reunion
 
             Find.LetterStack.ReceiveLetter(baseLetterLabel, baseLetterText, def.letterDef, new LookTargets(pawn));
 
-            GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+            gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
 
             return true;
-        }
-
-        // TODO: Reverse Patch
-        public static bool TryFindEntryCell(Map map, out IntVec3 cell) // copied function
-        {
-            return CellFinder.TryFindRandomEdgeCellWith((IntVec3 c) => map.reachability.CanReachColony(c) && !c.Fogged(map),
-                map, CellFinder.EdgeRoadChance_Neutral, out cell);
         }
     }
 
 
-    public class IncidentWorker_AllyJoin : IncidentWorker
+    public class IncidentWorker_AllyJoin : IncidentWorker_WandererJoin
     {
         protected override bool CanFireNowSub(IncidentParms parms)
         {
-            Map map = (Map)parms.target;
-            IntVec3 intVec;
-            return IncidentAllyJoin.TryFindEntryCell(map, out intVec);
+            if (!base.CanFireNowSub(parms))
+            {
+                return false;
+            }
+
+            GameComponent gameComponent = GameComponent.CurrentGame;
+            return gameComponent != null && gameComponent.ListAllyAvailable.Count > 0;
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)

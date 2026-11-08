@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
-using Random = UnityEngine.Random;
 
 namespace Kyrun.Reunion
 {
@@ -17,11 +16,17 @@ namespace Kyrun.Reunion
 
     class GameComponent : Verse.GameComponent
     {
-        public static List<Pawn> ListAllyAvailable = new List<Pawn>();
-        public static List<string> ListAllySpawned = new List<string>();
+        public List<Pawn> ListAllyAvailable = new List<Pawn>();
+        public List<string> ListAllySpawned = new List<string>();
 
         // Variables
-        public static int NextEventTick = 0;
+        public int NextEventTick = 0;
+
+        // Resolve the component belonging to the currently active game.
+        public static GameComponent CurrentGame => Current.Game?.GetComponent<GameComponent>();
+
+        public const int NUM_TICKS_PER_CHECK = 250;
+        public static int RandomOffset = Rand.Range(0, NUM_TICKS_PER_CHECK);
 
         // Trait-related
         public const string TRAIT_DEF_CHARACTER = "ReunionCharacter";
@@ -40,35 +45,18 @@ namespace Kyrun.Reunion
             }
         }
 
-        static Trait m_TraitAlly;
-        public static Trait Trait_Ally
-        {
-            get
+        // Trait instances are mutable and hold a reference to their owning pawn.
+        // Return a fresh instance for each dropdown so separate pawns never share one.
+        public static IReadOnlyList<Trait> ReunionTraits =>
+            new List<Trait>
             {
-                if (m_TraitAlly == null)
-                {
-                    m_TraitAlly = new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true);
-                }
-                return m_TraitAlly;
-            }
-        }
-
-        public static IReadOnlyList<Trait> ReunionTraits
-        {
-            get
-            {
-                return new List<Trait>()
-                {
-                    Trait_Ally
-                };
-            }
-        }
+                new Trait(TraitDef_Character, TRAIT_DEGREE_ALLY, true)
+            };
 
         // Save key
         const string SAVE_NEXT_EVENT_TICK = "Reunion_NextEventTick";
         const string SAVE_KEY_LIST_ALLY_AVAILABLE = "Reunion_AllyAvailable";
         const string SAVE_KEY_LIST_ALLY_SPAWNED = "Reunion_AllySpawned";
-        const string SAVE_KEY_DICT_ALLY_START_BIO_AGE = "Reunion_AllyStartBioAge";
 
         public static Settings Settings { get; private set; }
 
@@ -78,15 +66,56 @@ namespace Kyrun.Reunion
             Settings = LoadedModManager.GetMod<Mod>().GetSettings<Settings>();
         }
 
-
-        public static void InitOnNewGame()
+        public override void StartedNewGame()
         {
-            ListAllyAvailable.Clear();
-            ListAllySpawned.Clear();
-            NextEventTick = 0;
+            base.StartedNewGame();
+
+            InitOnNewGame();
+            PostInit();
+        }
+
+        public override void LoadedGame()
+        {
+            base.LoadedGame();
+
+            InitOnLoad();
+            PostInit();
+        }
+
+        public override void GameComponentTick()
+        {
+            base.GameComponentTick();
+
+            if (NextEventTick <= 0)
+            {
+                return;
+            }
+
+            var tickManager = Find.TickManager;
+            if (tickManager == null)
+            {
+                return;
+            }
+
+            var currentTick = tickManager.TicksGame;
+            if (currentTick % NUM_TICKS_PER_CHECK != 0)
+            {
+                return;
+            }
+
+            if (currentTick >= NextEventTick)
+            {
+                Util.Warn(currentTick + " >= " + NextEventTick);
+                DecideAndDoEvent();
+            }
+        }
+
+
+        public void InitOnNewGame()
+        {
 #if TESTING
-			/* */
 			const int TOTAL = 5;
+            Util.Warn("TESTING mode enabled. Generating " + TOTAL + " random pawns with Ally trait for Reunion events.");
 			for (int i = 0; i < TOTAL; ++i)
 			{
 				var pgr = new PawnGenerationRequest(PawnKindDef.Named("SpaceRefugee"), null,
@@ -95,12 +124,11 @@ namespace Kyrun.Reunion
 				newPawn.Name = NameTriple.FromString("ReunionPawn" + i);
                 AddPawnToAvailableList(newPawn);
 			}
-			/* */
 #endif
         }
 
 
-        public static void InitOnLoad()
+        public void InitOnLoad()
         {
             if (ListAllyAvailable == null) ListAllyAvailable = new List<Pawn>();
             if (ListAllySpawned == null) ListAllySpawned = new List<string>();
@@ -121,7 +149,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void PostInit()
+        public void PostInit()
         {
             // Check player's existing pawns with Ally trait and put into list for saving.
             // This means that starting pawns (as opposed to "left behind" pawns) with the Ally trait
@@ -174,9 +202,9 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void AddPawnToAvailableList(Pawn pawn)
+        public void AddPawnToAvailableList(Pawn pawn)
         {
-            if (pawn != null && !pawn.Dead && !ListAllyAvailable.Contains(pawn))
+            if (pawn != null && !pawn.Dead && !pawn.Destroyed && !ListAllyAvailable.Contains(pawn))
             {
                 if (pawn.health != null)
                 {
@@ -187,6 +215,8 @@ namespace Kyrun.Reunion
                     }
                 }
 
+                string pawnSavedMsg = "Saved World pawn with Ally trait to Reunion list: " + pawn.Name;
+
                 // Substract the game-time passed from the pawns age during the time of saving.
                 // This gives us the pawns age at the start of a new game.
                 // We ONLY ever save the pawns age at the start of a new game.
@@ -194,33 +224,49 @@ namespace Kyrun.Reunion
                 if (pawn.ageTracker != null)
                 {
                     pawn.ageTracker.AgeBiologicalTicks -= GenTicks.TicksAbs;
+                    pawnSavedMsg += ", age " + pawn.ageTracker.AgeBiologicalYearsFloat.ToString("0.00");
                 }
 
-                Util.Msg("Saved World pawn with Ally trait to Reunion list: " + pawn.Name + ", age " + pawn.ageTracker.AgeBiologicalYearsFloat.ToString("0.00"));
+                Util.Msg(pawnSavedMsg);
 
                 ListAllyAvailable.Add(pawn);
             }
         }
 
 
-        public static Pawn GetRandomAllyForSpawning()
+        public bool HasAvailableAlly =>
+            ListAllyAvailable != null &&
+            ListAllyAvailable.Exists(pawn => pawn != null && !pawn.Dead && !pawn.Destroyed);
+
+
+        public Pawn GetRandomAllyForSpawning(string sourceDebugName)
         {
+            if (ListAllyAvailable == null || ListAllyAvailable.Count == 0)
+            {
+                Util.Error("Failed to get Ally for " + sourceDebugName +
+                    ": the available Ally list is null or empty.");
+                return null;
+            }
+
+            int invalidCount = ListAllyAvailable.RemoveAll(pawn =>
+                pawn == null || pawn.Dead || pawn.Destroyed);
+
+            if (invalidCount > 0)
+            {
+                Util.Warn("Removed " + invalidCount +
+                    " null, dead, or destroyed pawn(s) from the available Ally list while preparing " +
+                    sourceDebugName + ".");
+            }
+
             if (ListAllyAvailable.Count == 0)
             {
-                Util.Error("Failed to get random ally for spawning because the Ally list is empty.");
+                Util.Error("Failed to get Ally while preparing " + sourceDebugName +
+                    ": the available Ally list contains no living, valid pawns.");
                 return null;
             }
 
-            var randomIndex = Random.Range(0, ListAllyAvailable.Count);
-            Pawn pawn = ListAllyAvailable[randomIndex];
-            if (pawn == null)
-            {
-                Util.Error("Ally in list at index " + randomIndex + " is null.");
-                return null;
-            }
-
+            Pawn pawn = ListAllyAvailable[Rand.Range(0, ListAllyAvailable.Count)];
             SetupSpawn(pawn);
-
             return pawn;
         }
 
@@ -231,7 +277,7 @@ namespace Kyrun.Reunion
 
             if (trait != null)
             {
-                pawn.story.traits.allTraits.Remove(trait);
+                pawn.story.traits.RemoveTrait(trait);
                 return true;
             }
 
@@ -239,7 +285,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void SetupSpawn(Pawn pawn)
+        public void SetupSpawn(Pawn pawn)
         {
             ListAllyAvailable.Remove(pawn);
             ListAllySpawned.Add(pawn.GetUniqueLoadID());
@@ -271,7 +317,7 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void ReturnToAvailable(Pawn pawn)
+        public void ReturnToAvailable(Pawn pawn)
         {
             ListAllySpawned.Remove(pawn.GetUniqueLoadID());
 
@@ -300,13 +346,13 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void FlagNextEventReadyForScheduling()
+        public void FlagNextEventReadyForScheduling()
         {
             NextEventTick = 0;
         }
 
 
-        public static void TryScheduleNextEvent(ScheduleMode mode = ScheduleMode.Normal)
+        public void TryScheduleNextEvent(ScheduleMode mode = ScheduleMode.Normal)
         {
             if (ListAllyAvailable.Count == 0)
             {
@@ -342,7 +388,7 @@ namespace Kyrun.Reunion
             var min = Settings.minDaysBetweenEvents * GenDate.TicksPerDay;
             if (min == 0) min = 1; // limit it to at least 1 tick
             var max = Settings.maxDaysBetweenEvents * GenDate.TicksPerDay;
-            NextEventTick = Find.TickManager.TicksGame + Random.Range(min, max);
+            NextEventTick = Find.TickManager.TicksGame + Rand.Range(min, max);
 
 #if TESTING
 			NextEventTick = Find.TickManager.TicksGame + 1000;
@@ -351,13 +397,16 @@ namespace Kyrun.Reunion
         }
 
 
-        public static void DecideAndDoEvent()
+        public void DecideAndDoEvent()
         {
             NextEventTick = -1; // stop next event from happening
 
             if (ListAllyAvailable.Count <= 0) // no more allies
             {
                 Util.Error("No available Ally pawns, event should not have fired!");
+
+                FlagNextEventReadyForScheduling();
+
                 return;
             }
             if (Current.Game.AnyPlayerHomeMap == null) // no map
@@ -390,8 +439,18 @@ namespace Kyrun.Reunion
 
             if (listAllowedEvents.Count > 0)
             {
-                var eventToDo = listAllowedEvents[Random.Range(0, listAllowedEvents.Count)];
-                Settings.EventAction[eventToDo].Invoke();
+                var eventToDo = listAllowedEvents[Rand.Range(0, listAllowedEvents.Count)];
+                bool eventStarted = Settings.EventAction[eventToDo].Invoke();
+
+                // Known issue: Exception caused by event invocation above will cause NextEventTick
+                // to remain at -1. Unlikely to happen, so will not fix. If it happens, the game has bigger problems.
+
+                if (!eventStarted)
+                {
+                    Util.Warn("Failed to start Reunion event: " + eventToDo + ". Event timer restarted.");
+                    FlagNextEventReadyForScheduling();
+                    TryScheduleNextEvent();
+                }
             }
             else
             {
@@ -405,7 +464,10 @@ namespace Kyrun.Reunion
         {
             Scribe_Values.Look(ref NextEventTick, SAVE_NEXT_EVENT_TICK, 0);
 
-            // Begin unpatching MVCF
+            #region Unpatch MVCF
+            // Reason: To prevent MVCF's uninitialized SaveManager from begin called.
+            // I don't remember what this is any more, just going by my change notes in Steam Workshop.
+
             const string MVCF_ID = "legodude17.mvcf";
             var original = Harmony.HasAnyPatches(MVCF_ID) ? typeof(Pawn).GetMethod(nameof(Pawn.ExposeData)) : null;
             Patches patches;
@@ -435,12 +497,14 @@ namespace Kyrun.Reunion
                 }
                 Main.HarmonyInstance.Unpatch(original, HarmonyPatchType.Postfix, MVCF_ID);
             }
-            // End unpatching MVCF
+
+            #endregion
 
             Scribe_Collections.Look(ref ListAllyAvailable, SAVE_KEY_LIST_ALLY_AVAILABLE, LookMode.Deep);
             Scribe_Collections.Look(ref ListAllySpawned, SAVE_KEY_LIST_ALLY_SPAWNED, LookMode.Value);
 
-            // Begin repatching MVCF
+            #region Repatching MVCF
+
             if (original != null && patch != null)
             {
                 var mvcfHarmony = new Harmony(MVCF_ID);
@@ -448,7 +512,8 @@ namespace Kyrun.Reunion
                         new HarmonyMethod(patch.PatchMethod, patch.priority, patch.before, patch.after, patch.debug),
                         null, null);
             }
-            // End repatching MVCF
+
+            #endregion
 
             base.ExposeData();
         }

@@ -1,53 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using RimWorld;
 using Verse;
 using HarmonyLib;
-using RimWorld.Planet;
+using RimWorld.QuestGen;
 
 namespace Kyrun.Reunion
 {
     static class HarmonyPatches
     {
-        // Called on new game
-        [HarmonyPatch(typeof(Game), "InitNewGame")]
-        internal static class Verse_Game_InitNewGame
-        {
-            static void Postfix()
-            {
-                GameComponent.InitOnNewGame();
-                GameComponent.PostInit();
-            }
-        }
-
-
-        // Called on load game
-        [HarmonyPatch(typeof(Game), "LoadGame")]
-        internal static class Verse_Game_LoadGame
-        {
-            static void Postfix()
-            {
-                GameComponent.InitOnLoad();
-                GameComponent.PostInit();
-            }
-        }
-
-
-        // Tick for this mod
-        [HarmonyPatch(typeof(TickManager), "DoSingleTick")]
-        internal static class TickManager_DoSingleTick
-        {
-            static void Postfix(TickManager __instance)
-            {
-                if (GameComponent.NextEventTick > 0 && __instance.TicksGame >= GameComponent.NextEventTick)
-                {
-                    GameComponent.DecideAndDoEvent();
-                }
-            }
-        }
-
-
         // Prevent Reunion pawns from going to World pool
         [HarmonyPatch(typeof(RimWorld.Planet.WorldPawns), "PassToWorld")]
         [HarmonyPatch(new Type[] { typeof(Pawn), typeof(RimWorld.Planet.PawnDiscardDecideMode) })]
@@ -75,20 +37,23 @@ namespace Kyrun.Reunion
 
             static bool Prefix(RimWorld.Planet.WorldPawns __instance, ref Pawn pawn, ref RimWorld.Planet.PawnDiscardDecideMode discardMode)
             {
-                if (Current.Game.Info.RealPlayTimeInteracting > 0 && // prevent this from firing when the game hasn't even started proper
+                GameComponent gameComponent = GameComponent.CurrentGame;
+
+                if (gameComponent != null &&
+                    Current.Game.Info.RealPlayTimeInteracting > 0 && // prevent this from firing when the game hasn't even started proper
                     !pawn.Dead && // ignore dead pawns
                     !pawn.Destroyed && // ignore pawns destroyed for whatever reason
                     !KidnapUtility.IsKidnapped(pawn) && // don't make kidnapped pawns available; vanilla handles that naturally
                     !PawnsFinder.AllCaravansAndTravellingTransporters_Alive.Contains(pawn) && // ignore caravan/pods
                     !IsLeavingInShuttleWithNoDestination(pawn) && // ignore pawns in shuttle leaving for what is most likely a quest
-                    GameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
+                    gameComponent.ListAllySpawned.Contains(pawn.GetUniqueLoadID()))
                 {
                     if (PawnComponentsUtility.HasSpawnedComponents(pawn))
                     {
                         PawnComponentsUtility.RemoveComponentsOnDespawned(pawn);
                     }
                     if (pawn.IsPrisoner) pawn.guest.SetGuestStatus(null, GuestStatus.Guest);
-                    GameComponent.ReturnToAvailable(pawn);
+                    gameComponent.ReturnToAvailable(pawn);
                     return false;
                 }
                 return true;
@@ -104,9 +69,11 @@ namespace Kyrun.Reunion
             static void Postfix(InteractionWorker_RecruitAttempt __instance,
                 Pawn recruiter, Pawn recruitee, bool useAudiovisualEffects)
             {
-                if (GameComponent.ListAllySpawned.Contains(recruitee.GetUniqueLoadID()))
+                GameComponent gameComponent = GameComponent.CurrentGame;
+                if (gameComponent != null &&
+                    gameComponent.ListAllySpawned.Contains(recruitee.GetUniqueLoadID()))
                 {
-                    GameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
+                    gameComponent.TryScheduleNextEvent(ScheduleMode.Forced);
                 }
             }
         }
@@ -153,10 +120,9 @@ namespace Kyrun.Reunion
 
             if (pawn != null && pawn.story != null && pawn.story.traits != null)
             {
-                foreach (var reunionTrait in reunionTraitList)
-                {
-                    if (pawn.story.traits.allTraits.Contains(reunionTrait)) return reunionTrait;
-                }
+                return pawn.story.traits.allTraits.Find(trait =>
+                    trait.def == GameComponent.TraitDef_Character &&
+                    trait.Degree == GameComponent.TRAIT_DEGREE_ALLY);
             }
             return null;
         }
@@ -176,12 +142,10 @@ namespace Kyrun.Reunion
                     {
                         option = new FloatMenuOption(GetReunionTraitDisplayName(trait, pawn), delegate ()
                         {
-                            foreach (var reunionTrait in GameComponent.ReunionTraits)
+                            Trait existingReunionTrait = GetReunionTrait(pawn);
+                            if (existingReunionTrait != null)
                             {
-                                if (pawn.story.traits.allTraits.Contains(reunionTrait))
-                                {
-                                    pawn.story.traits.RemoveTrait(reunionTrait);
-                                }
+                                pawn.story.traits.RemoveTrait(existingReunionTrait);
                             }
 
                             if (trait != null)
@@ -236,6 +200,75 @@ namespace Kyrun.Reunion
                     false);
 
                 Widgets.EndGroup();
+            }
+        }
+
+
+        // Use Reunion's custom QuestPart_PawnsArrive for the Refugee Chased quest.
+        [HarmonyPatch(typeof(QuestNode_PawnsArrive), "RunInt")]
+        static class QuestNode_PawnsArrive_RunInt
+        {
+            static IEnumerable<CodeInstruction> Transpiler(
+                IEnumerable<CodeInstruction> instructions)
+            {
+                var codes = new List<CodeInstruction>(instructions);
+
+                var constructor = AccessTools.Constructor(
+                    typeof(RimWorld.QuestPart_PawnsArrive));
+
+                var factory = AccessTools.Method(
+                    typeof(QuestNode_PawnsArrive_RunInt),
+                    nameof(CreatePawnsArrive));
+
+                int matches = 0;
+
+                for (int i = 0; i < codes.Count; i++)
+                {
+                    if (codes[i].opcode == System.Reflection.Emit.OpCodes.Newobj &&
+                        Equals(codes[i].operand, constructor))
+                    {
+                        // Preserve labels and exception block metadata.
+                        var replacement = new CodeInstruction(
+                            System.Reflection.Emit.OpCodes.Ldarg_0);
+
+                        replacement.labels.AddRange(codes[i].labels);
+                        replacement.blocks.AddRange(codes[i].blocks);
+
+                        codes[i] = replacement;
+
+                        codes.Insert(i + 1, new CodeInstruction(
+                            System.Reflection.Emit.OpCodes.Call, factory));
+
+                        matches++;
+                        i++;
+                    }
+                }
+
+                if (matches != 1)
+                {
+                    Util.Error(
+                        "Failed to patch QuestNode_PawnsArrive.RunInt: " +
+                        "expected exactly one QuestPart_PawnsArrive constructor, found " +
+                        matches + ".");
+                }
+
+                return codes;
+            }
+
+            static RimWorld.QuestPart_PawnsArrive CreatePawnsArrive(QuestNode_PawnsArrive node)
+            {
+                if (node is IncidentAllyChased_PawnsArrive)
+                {
+                    // Register the selected map as a target for its MapRemoved signal.
+                    QuestGenUtility.HardcodedSignalWithQuestID("map.MapRemoved");
+
+                    return new Kyrun.Reunion.QuestPart_PawnsArrive
+                    {
+                        signalListenMode = QuestPart.SignalListenMode.OngoingOrNotYetAccepted
+                    };
+                }
+
+                return new RimWorld.QuestPart_PawnsArrive();
             }
         }
     }
