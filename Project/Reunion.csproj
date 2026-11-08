@@ -13,6 +13,7 @@
     <AssemblyName>Reunion</AssemblyName>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
+    <GenerateDependencyFile>false</GenerateDependencyFile> 
 
     <!-- Build settings -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
