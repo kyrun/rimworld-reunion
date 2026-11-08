@@ -26,7 +26,6 @@ namespace Kyrun.Reunion
             // NOTE: This shows the Downed Refugee message which mentions "Reform caravan",
             // but I don't think people read this, and it's a minor issue if they do.
             pawn.mindState.WillJoinColonyIfRescued = true;
-            
 
             TaggedString baseLetterLabel = def.letterLabel.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);
             TaggedString baseLetterText = def.letterText.Formatted(pawn.Named("PAWN")).AdjustedFor(pawn, "PAWN", true);

@@ -36,7 +36,6 @@ namespace Kyrun.Reunion
 
             return true;
         }
-
     }
 
 

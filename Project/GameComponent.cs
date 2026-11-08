@@ -464,7 +464,10 @@ namespace Kyrun.Reunion
         {
             Scribe_Values.Look(ref NextEventTick, SAVE_NEXT_EVENT_TICK, 0);
 
-            // Begin unpatching MVCF
+            #region Unpatch MVCF
+            // Reason: To prevent MVCF's uninitialized SaveManager from begin called.
+            // I don't remember what this is any more, just going by my change notes in Steam Workshop.
+
             const string MVCF_ID = "legodude17.mvcf";
             var original = Harmony.HasAnyPatches(MVCF_ID) ? typeof(Pawn).GetMethod(nameof(Pawn.ExposeData)) : null;
             Patches patches;
@@ -494,12 +497,14 @@ namespace Kyrun.Reunion
                 }
                 Main.HarmonyInstance.Unpatch(original, HarmonyPatchType.Postfix, MVCF_ID);
             }
-            // End unpatching MVCF
+
+            #endregion
 
             Scribe_Collections.Look(ref ListAllyAvailable, SAVE_KEY_LIST_ALLY_AVAILABLE, LookMode.Deep);
             Scribe_Collections.Look(ref ListAllySpawned, SAVE_KEY_LIST_ALLY_SPAWNED, LookMode.Value);
 
-            // Begin repatching MVCF
+            #region Repatching MVCF
+
             if (original != null && patch != null)
             {
                 var mvcfHarmony = new Harmony(MVCF_ID);
@@ -507,7 +512,8 @@ namespace Kyrun.Reunion
                         new HarmonyMethod(patch.PatchMethod, patch.priority, patch.before, patch.after, patch.debug),
                         null, null);
             }
-            // End repatching MVCF
+
+            #endregion
 
             base.ExposeData();
         }
