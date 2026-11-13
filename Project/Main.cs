@@ -13,6 +13,9 @@ namespace Kyrun.Reunion
         {
             HarmonyInstance = new Harmony("kyrun.mod.reunion");
             HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
+
+            // Apply optional compatibility patches after Reunion's own patches.
+            SurveillanceShiftCompatibility.Apply();
         }
     }
 }
